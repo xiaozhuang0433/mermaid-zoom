@@ -321,6 +321,10 @@ export default class MermaidZoomPlugin extends Plugin {
 			{ position: 'right', cursor: 'ew-resize', style: 'top: 12px; bottom: 12px; right: 0; width: 6px;' },
 		];
 
+		// Get initial margin values
+		let currentMarginLeft = 0;
+		let currentMarginTop = 0;
+
 		handles.forEach(({ position, cursor, style }) => {
 			const handle = container.createDiv(`mermaid-resize-${position}`);
 			handle.style.cssText = `
@@ -335,8 +339,8 @@ export default class MermaidZoomPlugin extends Plugin {
 			let startY = 0;
 			let startWidth = 0;
 			let startHeight = 0;
-			let startLeft = 0;
-			let startTop = 0;
+			let startMarginLeft = 0;
+			let startMarginTop = 0;
 
 			const onMouseDown = (e: MouseEvent) => {
 				e.preventDefault();
@@ -346,8 +350,8 @@ export default class MermaidZoomPlugin extends Plugin {
 				startY = e.clientY;
 				startWidth = container.offsetWidth;
 				startHeight = container.offsetHeight;
-				startLeft = container.offsetLeft;
-				startTop = container.offsetTop;
+				startMarginLeft = currentMarginLeft;
+				startMarginTop = currentMarginTop;
 				document.body.style.cursor = cursor;
 				document.body.style.userSelect = 'none';
 			};
@@ -361,23 +365,39 @@ export default class MermaidZoomPlugin extends Plugin {
 
 				let newWidth = startWidth;
 				let newHeight = startHeight;
+				let newMarginLeft = startMarginLeft;
+				let newMarginTop = startMarginTop;
 
 				// Handle horizontal resize
 				if (position.includes('right')) {
 					newWidth = Math.max(150, startWidth + deltaX);
 				} else if (position.includes('left')) {
-					newWidth = Math.max(150, startWidth - deltaX);
+					// Expand to the left using negative margin
+					const widthDelta = -deltaX;
+					newWidth = Math.max(150, startWidth + widthDelta);
+					if (newWidth > 150) {
+						newMarginLeft = startMarginLeft + deltaX;
+					}
 				}
 
 				// Handle vertical resize
 				if (position.includes('bottom')) {
 					newHeight = Math.max(100, startHeight + deltaY);
 				} else if (position.includes('top')) {
-					newHeight = Math.max(100, startHeight - deltaY);
+					// Expand upward using negative margin
+					const heightDelta = -deltaY;
+					newHeight = Math.max(100, startHeight + heightDelta);
+					if (newHeight > 100) {
+						newMarginTop = startMarginTop + deltaY;
+					}
 				}
 
 				container.style.width = `${newWidth}px`;
 				container.style.height = `${newHeight}px`;
+				container.style.marginLeft = `${newMarginLeft}px`;
+				container.style.marginTop = `${newMarginTop}px`;
+				currentMarginLeft = newMarginLeft;
+				currentMarginTop = newMarginTop;
 			};
 
 			const onMouseUp = () => {
