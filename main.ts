@@ -251,8 +251,11 @@ export default class MermaidZoomPlugin extends Plugin {
 			// Update button icon to expand
 			if (state.fullscreenBtn) {
 				state.fullscreenBtn.innerHTML = `
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-						<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+					<svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+						<polyline points="1,10 1,15 6,15"/>
+						<polyline points="15,10 15,15 10,15"/>
+						<polyline points="1,6 1,1 6,1"/>
+						<polyline points="15,6 15,1 10,1"/>
 					</svg>
 				`;
 			}
@@ -296,8 +299,11 @@ export default class MermaidZoomPlugin extends Plugin {
 			// Update button icon to shrink
 			if (state.fullscreenBtn) {
 				state.fullscreenBtn.innerHTML = `
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-						<path d="M4 14h6v6m10-10h-6V4m0 6l7-7M3 21l7-7"/>
+					<svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+						<polyline points="6,1 6,6 1,6"/>
+						<polyline points="10,1 10,6 15,6"/>
+						<polyline points="6,15 6,10 1,10"/>
+						<polyline points="10,15 10,10 15,10"/>
 					</svg>
 				`;
 			}
@@ -375,11 +381,16 @@ export default class MermaidZoomPlugin extends Plugin {
 			cls: 'mermaid-zoom-btn mermaid-fullscreen-btn'
 		});
 		fullscreenBtn.innerHTML = `
-			<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-				<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+			<svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+				<polyline points="1,10 1,15 6,15"/>
+				<polyline points="15,10 15,15 10,15"/>
+				<polyline points="1,6 1,1 6,1"/>
+				<polyline points="15,6 15,1 10,1"/>
 			</svg>
 		`;
 		this.styleButton(fullscreenBtn);
+		// 单独给全屏按钮去掉内边距，让图标更大
+		fullscreenBtn.style.padding = '6px';
 		state.fullscreenBtn = fullscreenBtn;
 		fullscreenBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
