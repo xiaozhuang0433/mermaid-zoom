@@ -10,6 +10,8 @@ interface ZoomState {
 	translateX: number;
 	translateY: number;
 	scaleIndicator?: HTMLElement;
+	svg: SVGSVGElement;
+	container: HTMLElement;
 }
 
 export default class MermaidZoomPlugin extends Plugin {
@@ -170,7 +172,9 @@ export default class MermaidZoomPlugin extends Plugin {
 			startX: 0,
 			startY: 0,
 			translateX: 0,
-			translateY: 0
+			translateY: 0,
+			svg: svg,
+			container: container
 		};
 		this.zoomStates.set(contentWrapper, state);
 
@@ -185,6 +189,33 @@ export default class MermaidZoomPlugin extends Plugin {
 
 		// Add touch gesture support
 		this.addTouchGestures(container, contentWrapper, state);
+
+		// Fit SVG to container initially
+		this.fitToContainer(container, contentWrapper, svg, state);
+	}
+
+	private fitToContainer(container: HTMLElement, contentWrapper: HTMLElement, svg: SVGSVGElement, state: ZoomState) {
+		// Get available space (account for padding)
+		const containerPadding = 16; // 1em padding
+		const bottomPadding = 40; // extra padding for controls
+		const availableWidth = container.clientWidth - containerPadding * 2;
+		const availableHeight = container.clientHeight - containerPadding - bottomPadding;
+
+		// Get SVG actual size
+		const svgRect = svg.getBoundingClientRect();
+		const svgWidth = svgRect.width || svg.clientWidth || 300;
+		const svgHeight = svgRect.height || svg.clientHeight || 200;
+
+		// Calculate scale to fit
+		const scaleX = availableWidth / svgWidth;
+		const scaleY = availableHeight / svgHeight;
+		const fitScale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
+
+		// Apply the scale
+		state.scale = fitScale;
+		state.translateX = 0;
+		state.translateY = 0;
+		this.updateTransform(contentWrapper, state);
 	}
 
 	private createControls(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState) {
@@ -491,10 +522,8 @@ export default class MermaidZoomPlugin extends Plugin {
 	}
 
 	private resetZoom(contentWrapper: HTMLElement, state: ZoomState) {
-		state.scale = this.defaultScale;
-		state.translateX = 0;
-		state.translateY = 0;
-		this.updateTransform(contentWrapper, state);
+		// Fit to container instead of just resetting to 100%
+		this.fitToContainer(state.container, contentWrapper, state.svg, state);
 	}
 
 	private updateTransform(contentWrapper: HTMLElement, state: ZoomState) {
