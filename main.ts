@@ -19,6 +19,9 @@ interface ZoomState {
 	initialMarginLeft: string;
 	initialMarginTop: string;
 	fullscreenBtn?: HTMLButtonElement;
+	// Original SVG dimensions (saved once)
+	svgOriginalWidth: number;
+	svgOriginalHeight: number;
 }
 
 export default class MermaidZoomPlugin extends Plugin {
@@ -128,14 +131,14 @@ export default class MermaidZoomPlugin extends Plugin {
 
 		if (!targetParent) return;
 
-		// Get SVG dimensions for initial sizing
-		const svgRect = svg.getBoundingClientRect();
-		const svgWidth = svgRect.width || 300;
-		const svgHeight = svgRect.height || 200;
+		// Get SVG dimensions for initial container sizing
+		const initialSvgRect = svg.getBoundingClientRect();
+		const initialSvgWidth = initialSvgRect.width || 300;
+		const initialSvgHeight = initialSvgRect.height || 200;
 
 		// Calculate initial container size - max height equals width (square)
-		const containerWidth = Math.min(svgWidth + 32, targetParent.clientWidth || 600);
-		const containerHeight = Math.min(svgHeight + 60, containerWidth); // height <= width
+		const containerWidth = Math.min(initialSvgWidth + 32, targetParent.clientWidth || 600);
+		const containerHeight = Math.min(initialSvgHeight + 60, containerWidth); // height <= width
 
 		// Create zoom container
 		const container = createDiv('mermaid-zoom-container');
@@ -170,6 +173,11 @@ export default class MermaidZoomPlugin extends Plugin {
 		targetParent.insertBefore(container, targetElement);
 		contentWrapper.appendChild(targetElement);
 
+		// Get SVG original dimensions before any scaling
+		const svgRect = svg.getBoundingClientRect();
+		const svgOriginalWidth = svgRect.width || svg.clientWidth || 300;
+		const svgOriginalHeight = svgRect.height || svg.clientHeight || 200;
+
 		// Initialize zoom state
 		const state: ZoomState = {
 			scale: this.defaultScale,
@@ -186,7 +194,9 @@ export default class MermaidZoomPlugin extends Plugin {
 			initialWidth: container.style.width,
 			initialHeight: container.style.height,
 			initialMarginLeft: '0px',
-			initialMarginTop: '0px'
+			initialMarginTop: '0px',
+			svgOriginalWidth: svgOriginalWidth,
+			svgOriginalHeight: svgOriginalHeight
 		};
 		this.zoomStates.set(contentWrapper, state);
 
@@ -213,10 +223,9 @@ export default class MermaidZoomPlugin extends Plugin {
 		const availableWidth = container.clientWidth - containerPadding * 2;
 		const availableHeight = container.clientHeight - containerPadding - bottomPadding;
 
-		// Get SVG actual size
-		const svgRect = svg.getBoundingClientRect();
-		const svgWidth = svgRect.width || svg.clientWidth || 300;
-		const svgHeight = svgRect.height || svg.clientHeight || 200;
+		// Use saved original SVG dimensions
+		const svgWidth = state.svgOriginalWidth;
+		const svgHeight = state.svgOriginalHeight;
 
 		// Calculate scale to fit
 		const scaleX = availableWidth / svgWidth;
