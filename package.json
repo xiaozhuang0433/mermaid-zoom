@@ -1,0 +1,22 @@
+{
+  "name": "mermaid-zoom",
+  "version": "1.0.0",
+  "description": "Add zoom functionality to Mermaid diagrams in Obsidian",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production"
+  },
+  "keywords": [
+    "obsidian",
+    "plugin",
+    "mermaid",
+    "zoom"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "builtin-modules": "^3.3.0",
+    "esbuild": "^0.19.0",
+    "obsidian": "latest",
+    "typescript": "^5.3.0"
+  }
+}
