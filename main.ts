@@ -12,6 +12,13 @@ interface ZoomState {
 	scaleIndicator?: HTMLElement;
 	svg: SVGSVGElement;
 	container: HTMLElement;
+	// For fullscreen toggle
+	isFullscreen: boolean;
+	initialWidth: string;
+	initialHeight: string;
+	initialMarginLeft: string;
+	initialMarginTop: string;
+	fullscreenBtn?: HTMLButtonElement;
 }
 
 export default class MermaidZoomPlugin extends Plugin {
@@ -174,7 +181,12 @@ export default class MermaidZoomPlugin extends Plugin {
 			translateX: 0,
 			translateY: 0,
 			svg: svg,
-			container: container
+			container: container,
+			isFullscreen: false,
+			initialWidth: container.style.width,
+			initialHeight: container.style.height,
+			initialMarginLeft: '0px',
+			initialMarginTop: '0px'
 		};
 		this.zoomStates.set(contentWrapper, state);
 
@@ -216,6 +228,74 @@ export default class MermaidZoomPlugin extends Plugin {
 		state.translateX = 0;
 		state.translateY = 0;
 		this.updateTransform(contentWrapper, state);
+	}
+
+	private toggleFullscreen(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState) {
+		if (state.isFullscreen) {
+			// Exit fullscreen - restore to initial size
+			container.style.width = state.initialWidth;
+			container.style.height = state.initialHeight;
+			container.style.marginLeft = state.initialMarginLeft;
+			container.style.marginTop = state.initialMarginTop;
+			state.isFullscreen = false;
+
+			// Update button icon to expand
+			if (state.fullscreenBtn) {
+				state.fullscreenBtn.innerHTML = `
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+						<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+					</svg>
+				`;
+			}
+		} else {
+			// Save current size before going fullscreen
+			state.initialWidth = container.style.width;
+			state.initialHeight = container.style.height;
+			state.initialMarginLeft = container.style.marginLeft || '0px';
+			state.initialMarginTop = container.style.marginTop || '0px';
+
+			// Find the content area (Obsidian's view content container)
+			const contentArea = container.closest('.view-content')
+				|| container.closest('.markdown-preview-view')
+				|| container.closest('.markdown-reading-view')
+				|| container.closest('.workspace-leaf-content');
+
+			const containerRect = container.getBoundingClientRect();
+			let contentAreaRect: DOMRect;
+
+			if (contentArea) {
+				contentAreaRect = contentArea.getBoundingClientRect();
+			} else {
+				// Fallback to viewport
+				contentAreaRect = new DOMRect(0, 0, window.innerWidth, window.innerHeight);
+			}
+
+			// Calculate fullscreen size based on content area
+			const padding = 10;
+			const fullWidth = contentAreaRect.width - padding * 2;
+			const fullHeight = Math.round(fullWidth * 9 / 16);
+
+			// Calculate negative margin relative to content area
+			const negativeMarginLeft = -(containerRect.left - contentAreaRect.left - padding);
+
+			container.style.width = `${fullWidth}px`;
+			container.style.height = `${fullHeight}px`;
+			container.style.marginLeft = `${negativeMarginLeft}px`;
+			container.style.marginTop = '0px';
+			state.isFullscreen = true;
+
+			// Update button icon to shrink
+			if (state.fullscreenBtn) {
+				state.fullscreenBtn.innerHTML = `
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+						<path d="M4 14h6v6m10-10h-6V4m0 6l7-7M3 21l7-7"/>
+					</svg>
+				`;
+			}
+		}
+
+		// Fit SVG to new container size
+		this.fitToContainer(container, contentWrapper, state.svg, state);
 	}
 
 	private createControls(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState) {
@@ -280,6 +360,22 @@ export default class MermaidZoomPlugin extends Plugin {
 		`;
 		state.scaleIndicator = scaleIndicator;
 		this.updateTransform(contentWrapper, state);
+
+		// Fullscreen toggle button
+		const fullscreenBtn = controls.createEl('button', {
+			cls: 'mermaid-zoom-btn mermaid-fullscreen-btn'
+		});
+		fullscreenBtn.innerHTML = `
+			<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+				<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+			</svg>
+		`;
+		this.styleButton(fullscreenBtn);
+		state.fullscreenBtn = fullscreenBtn;
+		fullscreenBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			this.toggleFullscreen(container, contentWrapper, state);
+		});
 
 		// Add resize handles to container (4 corners + 4 edges)
 		this.addResizeHandles(container, contentWrapper, state);
