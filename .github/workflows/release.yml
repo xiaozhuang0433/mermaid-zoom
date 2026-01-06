@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+      - '[0-9]+.*'
 
 permissions:
   contents: write
@@ -77,7 +78,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           body_path: final_notes.txt
-          files: mermaid-zoom.zip
+          files: |
+            mermaid-zoom.zip
+            main.js
+            manifest.json
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
