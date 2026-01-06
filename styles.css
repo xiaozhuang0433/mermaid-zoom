@@ -1,0 +1,26 @@
+/* Mermaid Zoom Plugin Styles */
+
+.mermaid-zoom-container svg {
+	display: block;
+}
+
+/* Modal close button hover */
+.mermaid-zoom-modal-close:hover {
+	background: var(--interactive-hover) !important;
+}
+
+/* Zoom button hover */
+.mermaid-zoom-btn:hover {
+	background: var(--interactive-hover) !important;
+}
+
+/* Fullscreen button padding */
+.mermaid-fullscreen-btn {
+	padding: 6px !important;
+}
+
+/* Resizing state */
+body.mermaid-zoom-resizing {
+	cursor: inherit !important;
+	user-select: none !important;
+}

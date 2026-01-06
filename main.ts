@@ -25,8 +25,8 @@ export default class MermaidZoomPlugin extends Plugin {
 	private mutationObserver?: MutationObserver;
 	private processedElements = new WeakSet<SVGSVGElement>();
 
-	async onload() {
-		console.log('Loading Mermaid Zoom plugin');
+	onload() {
+		console.debug('Loading Mermaid Zoom plugin');
 
 		// Set up MutationObserver to watch for new mermaid diagrams
 		this.setupMutationObserver();
@@ -159,9 +159,6 @@ export default class MermaidZoomPlugin extends Plugin {
 			width: fit-content;
 		`;
 
-		// Style the SVG
-		svg.style.display = 'block';
-
 		// Insert container and move content inside
 		targetParent.insertBefore(container, targetElement);
 		contentWrapper.appendChild(targetElement);
@@ -257,7 +254,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		// Close button
 		const closeBtn = document.createElement('button');
 		closeBtn.className = 'mermaid-zoom-modal-close';
-		closeBtn.innerHTML = '✕';
+		closeBtn.textContent = '✕';
 		closeBtn.style.cssText = `
 			width: 32px;
 			height: 32px;
@@ -272,12 +269,6 @@ export default class MermaidZoomPlugin extends Plugin {
 			justify-content: center;
 			transition: background 0.2s;
 		`;
-		closeBtn.addEventListener('mouseenter', () => {
-			closeBtn.style.background = 'var(--interactive-hover)';
-		});
-		closeBtn.addEventListener('mouseleave', () => {
-			closeBtn.style.background = 'var(--interactive-normal)';
-		});
 		header.appendChild(closeBtn);
 
 		// Create content area
@@ -515,16 +506,37 @@ export default class MermaidZoomPlugin extends Plugin {
 		const fullscreenBtn = controls.createEl('button', {
 			cls: 'mermaid-zoom-btn mermaid-fullscreen-btn'
 		});
-		fullscreenBtn.innerHTML = `
-			<svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-				<polyline points="1,10 1,15 6,15"/>
-				<polyline points="15,10 15,15 10,15"/>
-				<polyline points="1,6 1,1 6,1"/>
-				<polyline points="15,6 15,1 10,1"/>
-			</svg>
-		`;
+
+		// Create SVG icon
+		const svgNS = 'http://www.w3.org/2000/svg';
+		const svg = document.createElementNS(svgNS, 'svg');
+		svg.setAttribute('width', '24');
+		svg.setAttribute('height', '24');
+		svg.setAttribute('viewBox', '0 0 16 16');
+		svg.setAttribute('fill', 'none');
+		svg.setAttribute('stroke', 'currentColor');
+		svg.setAttribute('stroke-width', '1');
+		svg.setAttribute('stroke-linecap', 'round');
+		svg.setAttribute('stroke-linejoin', 'round');
+
+		const polyline1 = document.createElementNS(svgNS, 'polyline');
+		polyline1.setAttribute('points', '1,10 1,15 6,15');
+		svg.appendChild(polyline1);
+
+		const polyline2 = document.createElementNS(svgNS, 'polyline');
+		polyline2.setAttribute('points', '15,10 15,15 10,15');
+		svg.appendChild(polyline2);
+
+		const polyline3 = document.createElementNS(svgNS, 'polyline');
+		polyline3.setAttribute('points', '1,6 1,1 6,1');
+		svg.appendChild(polyline3);
+
+		const polyline4 = document.createElementNS(svgNS, 'polyline');
+		polyline4.setAttribute('points', '15,6 15,1 10,1');
+		svg.appendChild(polyline4);
+
+		fullscreenBtn.appendChild(svg);
 		this.styleButton(fullscreenBtn);
-		fullscreenBtn.style.padding = '6px';
 		fullscreenBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
 			this.openFullscreenModal(state);
@@ -549,12 +561,6 @@ export default class MermaidZoomPlugin extends Plugin {
 			justify-content: center;
 			transition: background 0.2s;
 		`;
-		btn.addEventListener('mouseenter', () => {
-			btn.style.background = 'var(--interactive-hover)';
-		});
-		btn.addEventListener('mouseleave', () => {
-			btn.style.background = 'var(--interactive-normal)';
-		});
 	}
 
 	private addResizeHandles(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState) {
@@ -602,7 +608,7 @@ export default class MermaidZoomPlugin extends Plugin {
 				startMarginLeft = currentMarginLeft;
 				startMarginTop = currentMarginTop;
 				document.body.style.cursor = cursor;
-				document.body.style.userSelect = 'none';
+				document.body.addClass('mermaid-zoom-resizing');
 			};
 
 			const onMouseMove = (e: MouseEvent) => {
@@ -653,7 +659,7 @@ export default class MermaidZoomPlugin extends Plugin {
 				if (!isResizing) return;
 				isResizing = false;
 				document.body.style.cursor = '';
-				document.body.style.userSelect = '';
+				document.body.removeClass('mermaid-zoom-resizing');
 				this.resetZoom(contentWrapper, state);
 			};
 
@@ -775,7 +781,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		newScale = Math.max(state.minScale, Math.min(state.maxScale, newScale));
 
 		// Center the zoom
-		const container = contentWrapper.parentElement as HTMLElement;
+		const container = contentWrapper.parentElement;
 		if (container) {
 			const rect = container.getBoundingClientRect();
 			const centerX = rect.width / 2;
@@ -805,7 +811,7 @@ export default class MermaidZoomPlugin extends Plugin {
 	}
 
 	onunload() {
-		console.log('Unloading Mermaid Zoom plugin');
+		console.debug('Unloading Mermaid Zoom plugin');
 
 		// Disconnect mutation observer
 		if (this.mutationObserver) {

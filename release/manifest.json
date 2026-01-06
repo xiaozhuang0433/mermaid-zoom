@@ -1,0 +1,10 @@
+{
+	"id": "mermaid-zoom",
+	"name": "Mermaid Zoom",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Add zoom functionality to Mermaid diagrams in Obsidian. Use mouse wheel or touch gestures to zoom in and out.",
+	"author": "Wang Xiao Zhuang",
+	"authorUrl": "https://github.com/xiaozhuang0433/mermaid-zoom",
+	"isDesktopOnly": false
+}
