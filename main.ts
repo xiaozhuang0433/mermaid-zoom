@@ -12,13 +12,6 @@ interface ZoomState {
 	scaleIndicator?: HTMLElement;
 	svg: SVGSVGElement;
 	container: HTMLElement;
-	// For fullscreen toggle
-	isFullscreen: boolean;
-	initialWidth: string;
-	initialHeight: string;
-	initialMarginLeft: string;
-	initialMarginTop: string;
-	fullscreenBtn?: HTMLButtonElement;
 	// Original SVG dimensions (saved once)
 	svgOriginalWidth: number;
 	svgOriginalHeight: number;
@@ -190,11 +183,6 @@ export default class MermaidZoomPlugin extends Plugin {
 			translateY: 0,
 			svg: svg,
 			container: container,
-			isFullscreen: false,
-			initialWidth: container.style.width,
-			initialHeight: container.style.height,
-			initialMarginLeft: '0px',
-			initialMarginTop: '0px',
 			svgOriginalWidth: svgOriginalWidth,
 			svgOriginalHeight: svgOriginalHeight
 		};
@@ -239,78 +227,225 @@ export default class MermaidZoomPlugin extends Plugin {
 		this.updateTransform(contentWrapper, state);
 	}
 
-	private toggleFullscreen(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState) {
-		if (state.isFullscreen) {
-			// Exit fullscreen - restore to initial size
-			container.style.width = state.initialWidth;
-			container.style.height = state.initialHeight;
-			container.style.marginLeft = state.initialMarginLeft;
-			container.style.marginTop = state.initialMarginTop;
-			state.isFullscreen = false;
+	private openFullscreenModal(state: ZoomState) {
+		// Create modal overlay
+		const modal = document.createElement('div');
+		modal.className = 'mermaid-zoom-modal';
+		modal.style.cssText = `
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100vw;
+			height: 100vh;
+			background: var(--background-primary);
+			z-index: 9999;
+			display: flex;
+			flex-direction: column;
+		`;
 
-			// Update button icon to expand
-			if (state.fullscreenBtn) {
-				state.fullscreenBtn.innerHTML = `
-					<svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-						<polyline points="1,10 1,15 6,15"/>
-						<polyline points="15,10 15,15 10,15"/>
-						<polyline points="1,6 1,1 6,1"/>
-						<polyline points="15,6 15,1 10,1"/>
-					</svg>
-				`;
+		// Create header with close button
+		const header = document.createElement('div');
+		header.className = 'mermaid-zoom-modal-header';
+		header.style.cssText = `
+			display: flex;
+			justify-content: flex-end;
+			padding: 10px 15px;
+			background: var(--background-secondary);
+			border-bottom: 1px solid var(--background-modifier-border);
+		`;
+
+		// Close button
+		const closeBtn = document.createElement('button');
+		closeBtn.className = 'mermaid-zoom-modal-close';
+		closeBtn.innerHTML = '✕';
+		closeBtn.style.cssText = `
+			width: 32px;
+			height: 32px;
+			border: none;
+			background: var(--interactive-normal);
+			color: var(--text-normal);
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 18px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: background 0.2s;
+		`;
+		closeBtn.addEventListener('mouseenter', () => {
+			closeBtn.style.background = 'var(--interactive-hover)';
+		});
+		closeBtn.addEventListener('mouseleave', () => {
+			closeBtn.style.background = 'var(--interactive-normal)';
+		});
+		header.appendChild(closeBtn);
+
+		// Create content area
+		const content = document.createElement('div');
+		content.className = 'mermaid-zoom-modal-content';
+		content.style.cssText = `
+			flex: 1;
+			overflow: hidden;
+			position: relative;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		`;
+
+		// Create zoom container inside modal
+		const modalZoomContainer = document.createElement('div');
+		modalZoomContainer.className = 'mermaid-zoom-modal-zoom-container';
+		modalZoomContainer.style.cssText = `
+			width: 100%;
+			height: 100%;
+			overflow: hidden;
+			position: relative;
+		`;
+
+		// Create content wrapper for transformations
+		const modalContentWrapper = document.createElement('div');
+		modalContentWrapper.className = 'mermaid-zoom-modal-wrapper';
+		modalContentWrapper.style.cssText = `
+			transform-origin: 0 0;
+			transition: transform 0.1s ease-out;
+			width: fit-content;
+			position: absolute;
+		`;
+
+		// Clone the SVG
+		const svgClone = state.svg.cloneNode(true) as SVGSVGElement;
+		svgClone.style.display = 'block';
+		modalContentWrapper.appendChild(svgClone);
+		modalZoomContainer.appendChild(modalContentWrapper);
+		content.appendChild(modalZoomContainer);
+
+		// Create modal controls
+		const controls = document.createElement('div');
+		controls.className = 'mermaid-zoom-modal-controls';
+		controls.style.cssText = `
+			position: absolute;
+			bottom: 20px;
+			right: 20px;
+			display: flex;
+			gap: 5px;
+			background: var(--background-secondary);
+			padding: 8px;
+			border-radius: 8px;
+			box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+		`;
+
+		// Modal zoom state
+		const modalState: ZoomState = {
+			scale: 1,
+			minScale: this.defaultMinScale,
+			maxScale: this.defaultMaxScale,
+			isDragging: false,
+			startX: 0,
+			startY: 0,
+			translateX: 0,
+			translateY: 0,
+			svg: svgClone,
+			container: modalZoomContainer,
+			svgOriginalWidth: state.svgOriginalWidth,
+			svgOriginalHeight: state.svgOriginalHeight
+		};
+
+		// Add zoom buttons
+		const zoomInBtn = document.createElement('button');
+		zoomInBtn.textContent = '+';
+		this.styleButton(zoomInBtn);
+		zoomInBtn.addEventListener('click', () => this.zoom(modalContentWrapper, modalState, 1.2));
+
+		const zoomOutBtn = document.createElement('button');
+		zoomOutBtn.textContent = '-';
+		this.styleButton(zoomOutBtn);
+		zoomOutBtn.addEventListener('click', () => this.zoom(modalContentWrapper, modalState, 0.8));
+
+		const resetBtn = document.createElement('button');
+		resetBtn.textContent = '⟲';
+		this.styleButton(resetBtn);
+		resetBtn.addEventListener('click', () => {
+			this.fitToContainerModal(modalZoomContainer, modalContentWrapper, modalState);
+		});
+
+		// Scale indicator
+		const scaleIndicator = document.createElement('span');
+		scaleIndicator.style.cssText = `
+			padding: 4px 8px;
+			font-size: 12px;
+			font-family: var(--font-ui-medium);
+			color: var(--text-muted);
+			min-width: 45px;
+			text-align: center;
+		`;
+		modalState.scaleIndicator = scaleIndicator;
+
+		controls.appendChild(zoomInBtn);
+		controls.appendChild(zoomOutBtn);
+		controls.appendChild(resetBtn);
+		controls.appendChild(scaleIndicator);
+		content.appendChild(controls);
+
+		modal.appendChild(header);
+		modal.appendChild(content);
+
+		// Close modal function
+		const closeModal = () => {
+			modal.remove();
+			document.removeEventListener('keydown', handleKeydown);
+		};
+
+		// Handle ESC key
+		const handleKeydown = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') {
+				closeModal();
 			}
-		} else {
-			// Save current size before going fullscreen
-			state.initialWidth = container.style.width;
-			state.initialHeight = container.style.height;
-			state.initialMarginLeft = container.style.marginLeft || '0px';
-			state.initialMarginTop = container.style.marginTop || '0px';
+		};
+		document.addEventListener('keydown', handleKeydown);
 
-			// Find the content area (Obsidian's view content container)
-			const contentArea = container.closest('.view-content')
-				|| container.closest('.markdown-preview-view')
-				|| container.closest('.markdown-reading-view')
-				|| container.closest('.workspace-leaf-content');
+		// Close button click
+		closeBtn.addEventListener('click', closeModal);
 
-			const containerRect = container.getBoundingClientRect();
-			let contentAreaRect: DOMRect;
+		// Add modal to document
+		document.body.appendChild(modal);
 
-			if (contentArea) {
-				contentAreaRect = contentArea.getBoundingClientRect();
-			} else {
-				// Fallback to viewport
-				contentAreaRect = new DOMRect(0, 0, window.innerWidth, window.innerHeight);
-			}
+		// Add zoom/pan interactions to modal
+		this.addWheelZoom(modalZoomContainer, modalContentWrapper, modalState);
+		this.addDragPan(modalZoomContainer, modalContentWrapper, modalState);
+		this.addTouchGestures(modalZoomContainer, modalContentWrapper, modalState);
 
-			// Calculate fullscreen size based on content area
-			const padding = 10;
-			const fullWidth = contentAreaRect.width - padding * 2;
-			const fullHeight = Math.round(fullWidth * 9 / 16);
+		// Fit to container after modal is visible
+		requestAnimationFrame(() => {
+			this.fitToContainerModal(modalZoomContainer, modalContentWrapper, modalState);
+		});
+	}
 
-			// Calculate negative margin relative to content area
-			const negativeMarginLeft = -(containerRect.left - contentAreaRect.left - padding);
+	private fitToContainerModal(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState) {
+		// Get available space
+		const padding = 40;
+		const availableWidth = container.clientWidth - padding * 2;
+		const availableHeight = container.clientHeight - padding * 2;
 
-			container.style.width = `${fullWidth}px`;
-			container.style.height = `${fullHeight}px`;
-			container.style.marginLeft = `${negativeMarginLeft}px`;
-			container.style.marginTop = '0px';
-			state.isFullscreen = true;
+		// Use saved original SVG dimensions
+		const svgWidth = state.svgOriginalWidth;
+		const svgHeight = state.svgOriginalHeight;
 
-			// Update button icon to shrink
-			if (state.fullscreenBtn) {
-				state.fullscreenBtn.innerHTML = `
-					<svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-						<polyline points="6,1 6,6 1,6"/>
-						<polyline points="10,1 10,6 15,6"/>
-						<polyline points="6,15 6,10 1,10"/>
-						<polyline points="10,15 10,10 15,10"/>
-					</svg>
-				`;
-			}
-		}
+		// Calculate scale to fit
+		const scaleX = availableWidth / svgWidth;
+		const scaleY = availableHeight / svgHeight;
+		const fitScale = Math.min(scaleX, scaleY, 2); // Allow up to 200% in modal
 
-		// Fit SVG to new container size
-		this.fitToContainer(container, contentWrapper, state.svg, state);
+		// Center the SVG
+		const scaledWidth = svgWidth * fitScale;
+		const scaledHeight = svgHeight * fitScale;
+		const centerX = (container.clientWidth - scaledWidth) / 2;
+		const centerY = (container.clientHeight - scaledHeight) / 2;
+
+		// Apply the scale and center
+		state.scale = fitScale;
+		state.translateX = centerX;
+		state.translateY = centerY;
+		this.updateTransform(contentWrapper, state);
 	}
 
 	private createControls(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState) {
@@ -389,12 +524,10 @@ export default class MermaidZoomPlugin extends Plugin {
 			</svg>
 		`;
 		this.styleButton(fullscreenBtn);
-		// 单独给全屏按钮去掉内边距，让图标更大
 		fullscreenBtn.style.padding = '6px';
-		state.fullscreenBtn = fullscreenBtn;
 		fullscreenBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
-			this.toggleFullscreen(container, contentWrapper, state);
+			this.openFullscreenModal(state);
 		});
 
 		// Add resize handles to container (4 corners + 4 edges)
