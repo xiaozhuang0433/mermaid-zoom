@@ -36,7 +36,7 @@ jobs:
       - name: Package plugin
         run: |
           mkdir -p release
-          cp main.js manifest.json LICENSE release/
+          cp main.js manifest.json styles.css LICENSE release/
           cd release
           zip ../mermaid-zoom.zip *
           cd ..
@@ -82,6 +82,7 @@ jobs:
             mermaid-zoom.zip
             main.js
             manifest.json
+            styles.css
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
