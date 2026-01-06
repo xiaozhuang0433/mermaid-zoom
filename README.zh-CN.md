@@ -1,5 +1,7 @@
 # Mermaid Zoom
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 一个为 Obsidian 中的 Mermaid 图表添加缩放功能的插件。
 
 ## 功能

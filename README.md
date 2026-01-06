@@ -1,5 +1,7 @@
 # Mermaid Zoom
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 An Obsidian plugin that adds zoom and pan functionality to Mermaid diagrams.
 
 ![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fxiaozhuang0433%2Fmermaid-zoom%2Fmain%2Fmanifest.json&query=$.version&prefix=v&label=version&color=2D9CDB)
