@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Package plugin
+        run: |
+          mkdir -p release
+          cp main.js manifest.json LICENSE release/
+          cd release
+          zip ../mermaid-zoom.zip *
+          cd ..
+
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          cat > release_notes.txt << 'EOF'
+          ## Mermaid Zoom $VERSION
+
+          ### Changes in this release
+
+          ### Installation
+
+          1. Download `mermaid-zoom.zip` below
+          2. Extract to your vault's plugins directory:
+             ```
+             <your-vault>/.obsidian/plugins/mermaid-zoom
+             ```
+          3. Enable the plugin in Obsidian:
+             - Settings → Community Plugins
+             - Find "Mermaid Zoom" and enable it
+
+          ### Features
+
+          - Mouse Wheel Zoom - Scroll over any Mermaid diagram to zoom in and out
+          - Drag to Pan - Click and drag to move around your diagrams
+          - Touch Gestures - Pinch to zoom and drag to pan on mobile devices
+          - Control Buttons - Quick access to zoom in, zoom out, and reset buttons
+          - Scale Indicator - Real-time display of current zoom level
+          - Fullscreen Mode - Open diagrams in a modal for better viewing
+
+          [Full Changelog](https://github.com/xiaozhuang0433/mermaid-zoom/commits/$VERSION)
+          EOF
+          envsubst < release_notes.txt > final_notes.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: final_notes.txt
+          files: mermaid-zoom.zip
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
