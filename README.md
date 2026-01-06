@@ -1,50 +1,86 @@
 # Mermaid Zoom
 
-一个为 Obsidian 中的 Mermaid 图表添加缩放功能的插件。
+An Obsidian plugin that adds zoom and pan functionality to Mermaid diagrams.
 
-## 功能
+![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fxiaozhuang0433%2Fmermaid-zoom%2Fmain%2Fmanifest.json&query=$.version&prefix=v&label=version&color=2D9CDB)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-- **鼠标滚轮缩放** - 在 Mermaid 图表上滚动鼠标滚轮即可缩放
-- **拖拽平移** - 按住鼠标左键拖动可以移动图表
-- **触摸手势** - 支持双指捏合缩放和单指拖动
-- **控制按钮** - 右下角提供放大、缩小、重置按钮
-- **缩放比例显示** - 实时显示当前缩放比例
+## Features
 
-## 安装
+- **Mouse Wheel Zoom** - Scroll over any Mermaid diagram to zoom in and out
+- **Drag to Pan** - Click and drag to move around your diagrams
+- **Touch Gestures** - Pinch to zoom and drag to pan on mobile devices
+- **Control Buttons** - Quick access to zoom in, zoom out, and reset buttons
+- **Scale Indicator** - Real-time display of current zoom level
+- **Fullscreen Mode** - Open diagrams in a modal for better viewing
 
-1. 将此插件文件夹复制到 Obsidian 的 plugins 目录：
+## Installation
+
+### Obsidian Plugin Market (Coming Soon)
+
+Once approved, install directly from Obsidian's community plugins browser.
+
+### Manual Installation
+
+1. Download the latest release from [GitHub Releases](https://github.com/xiaozhuang0433/mermaid-zoom/releases)
+2. Extract to your vault's plugins directory:
    ```
-   <你的库>/.obsidian/plugins/mermaid-zoom
+   <your-vault>/.obsidian/plugins/mermaid-zoom
    ```
+3. Enable the plugin in Obsidian:
+   - Settings → Community Plugins
+   - Find "Mermaid Zoom" and enable it
 
-2. 在 Obsidian 中启用插件：
-   - 打开设置 -> 第三方插件
-   - 找到 "Mermaid Zoom" 并启用
+## Usage
 
-## 使用方法
+### Mouse Controls
 
-### 鼠标操作
-- **缩放** - 将鼠标悬停在 Mermaid 图表上，滚动滚轮
-- **平移** - 按住鼠标左键拖动
-- **使用按钮** - 点击右下角的 +/- 按钮缩放，点击 ⟲ 重置
+| Action | Description |
+|--------|-------------|
+| **Zoom** | Hover over a Mermaid diagram and scroll the mouse wheel |
+| **Pan** | Click and drag to move the diagram |
+| **Fullscreen** | Click the fullscreen button to open in modal view |
 
-### 触摸操作（移动设备）
-- **缩放** - 双指捏合手势
-- **平移** - 单指拖动
+### Touch Controls (Mobile)
 
-## 开发
+| Action | Description |
+|--------|-------------|
+| **Zoom** | Pinch with two fingers |
+| **Pan** | Drag with one finger |
+
+### Control Buttons
+
+Located in the bottom-right corner of each diagram:
+
+- **`+`** - Zoom in
+- **`-`** - Zoom out
+- **`⟲`** - Reset to fit
+- **`⛶`** - Toggle fullscreen
+
+## Development
 
 ```bash
-# 安装依赖
+# Install dependencies
 npm install
 
-# 开发模式（监听文件变化）
+# Development mode (watch for changes)
 npm run dev
 
-# 生产构建
+# Production build
 npm run build
 ```
 
-## 技术细节
+## How It Works
 
-插件会自动检测 Obsidian 渲染的所有 Mermaid 图表，并为每个图表添加缩放容器。缩放范围为 10% 到 500%。
+The plugin automatically detects all Mermaid diagrams rendered in Obsidian and wraps each one in a zoomable container. Zoom range is configurable from 10% to 500%.
+
+Original SVG dimensions are cached to ensure consistent scaling behavior when resetting or resizing.
+
+## License
+
+[MIT](LICENSE) © [Wang Xiao Zhuang](https://github.com/xiaozhuang0433)
+
+## Support
+
+- Issues: [GitHub Issues](https://github.com/xiaozhuang0433/mermaid-zoom/issues)
+- Discussions: [GitHub Discussions](https://github.com/xiaozhuang0433/mermaid-zoom/discussions)
