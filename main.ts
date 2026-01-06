@@ -84,7 +84,7 @@ export default class MermaidZoomPlugin extends Plugin {
 			// Also check if element itself is a mermaid container
 			if (element.classList.contains('mermaid')) {
 				const svg = element.querySelector('svg');
-				if (svg) mermaidSvgs.push(svg as SVGSVGElement);
+				if (svg) mermaidSvgs.push(svg);
 			}
 		}
 
@@ -305,7 +305,6 @@ export default class MermaidZoomPlugin extends Plugin {
 
 		// Clone the SVG
 		const svgClone = state.svg.cloneNode(true) as SVGSVGElement;
-		svgClone.style.display = 'block';
 		modalContentWrapper.appendChild(svgClone);
 		modalZoomContainer.appendChild(modalContentWrapper);
 		content.appendChild(modalZoomContainer);
@@ -564,6 +563,14 @@ export default class MermaidZoomPlugin extends Plugin {
 	}
 
 	private addResizeHandles(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState) {
+		// Map cursor types to CSS class names
+		const cursorClassMap: Record<string, string> = {
+			'nwse-resize': 'mermaid-zoom-resizing-nwse',
+			'nesw-resize': 'mermaid-zoom-resizing-nesw',
+			'ns-resize': 'mermaid-zoom-resizing-ns',
+			'ew-resize': 'mermaid-zoom-resizing-ew'
+		};
+
 		// Define resize handles: 4 corners + 4 edges
 		const handles = [
 			{ position: 'top-left', cursor: 'nwse-resize', style: 'top: 0; left: 0; width: 12px; height: 12px;' },
@@ -589,6 +596,7 @@ export default class MermaidZoomPlugin extends Plugin {
 				z-index: 50;
 			`;
 
+			const resizeClass = cursorClassMap[cursor];
 			let isResizing = false;
 			let startX = 0;
 			let startY = 0;
@@ -607,8 +615,7 @@ export default class MermaidZoomPlugin extends Plugin {
 				startHeight = container.offsetHeight;
 				startMarginLeft = currentMarginLeft;
 				startMarginTop = currentMarginTop;
-				document.body.style.cursor = cursor;
-				document.body.addClass('mermaid-zoom-resizing');
+				document.body.addClass(resizeClass);
 			};
 
 			const onMouseMove = (e: MouseEvent) => {
@@ -658,8 +665,7 @@ export default class MermaidZoomPlugin extends Plugin {
 			const onMouseUp = () => {
 				if (!isResizing) return;
 				isResizing = false;
-				document.body.style.cursor = '';
-				document.body.removeClass('mermaid-zoom-resizing');
+				document.body.removeClass(resizeClass);
 				this.resetZoom(contentWrapper, state);
 			};
 
@@ -695,12 +701,15 @@ export default class MermaidZoomPlugin extends Plugin {
 	}
 
 	private addDragPan(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState) {
+		// Set initial cursor state
+		contentWrapper.classList.add('mermaid-zoom-content');
+
 		container.addEventListener('mousedown', (e) => {
 			if (e.button === 0) { // Left mouse button
 				state.isDragging = true;
 				state.startX = e.clientX - state.translateX;
 				state.startY = e.clientY - state.translateY;
-				container.style.cursor = 'grabbing';
+				contentWrapper.addClass('dragging');
 			}
 		});
 
@@ -716,11 +725,9 @@ export default class MermaidZoomPlugin extends Plugin {
 		document.addEventListener('mouseup', () => {
 			if (state.isDragging) {
 				state.isDragging = false;
-				container.style.cursor = 'grab';
+				contentWrapper.removeClass('dragging');
 			}
 		});
-
-		container.style.cursor = 'grab';
 	}
 
 	private addTouchGestures(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState) {

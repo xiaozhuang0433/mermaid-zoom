@@ -1,7 +1,38 @@
 /* Mermaid Zoom Plugin Styles */
 
-.mermaid-zoom-container svg {
+.mermaid-zoom-container svg,
+.mermaid-zoom-modal-wrapper svg {
 	display: block;
+}
+
+/* Container cursor states */
+.mermaid-zoom-content {
+	cursor: grab;
+}
+
+.mermaid-zoom-content.dragging {
+	cursor: grabbing;
+}
+
+/* Resizing cursor states */
+body.mermaid-zoom-resizing-nwse {
+	cursor: nwse-resize !important;
+	user-select: none !important;
+}
+
+body.mermaid-zoom-resizing-nesw {
+	cursor: nesw-resize !important;
+	user-select: none !important;
+}
+
+body.mermaid-zoom-resizing-ns {
+	cursor: ns-resize !important;
+	user-select: none !important;
+}
+
+body.mermaid-zoom-resizing-ew {
+	cursor: ew-resize !important;
+	user-select: none !important;
 }
 
 /* Modal close button hover */
