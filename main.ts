@@ -216,11 +216,11 @@ export default class MermaidZoomPlugin extends Plugin {
 		const scaleY = availableHeight / svgHeight;
 		const fitScale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
 
-		// Center the SVG in the container
+		// Center the SVG within the available area
 		const scaledWidth = svgWidth * fitScale;
 		const scaledHeight = svgHeight * fitScale;
-		const centerX = (container.clientWidth - scaledWidth) / 2;
-		const centerY = (container.clientHeight - bottomPadding - scaledHeight) / 2;
+		const centerX = (availableWidth - scaledWidth) / 2;
+		const centerY = (availableHeight - scaledHeight) / 2;
 
 		// Apply the scale and center
 		state.scale = fitScale;
