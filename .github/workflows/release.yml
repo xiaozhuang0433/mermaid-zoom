@@ -2,14 +2,14 @@ name: Build and Release
 
 on:
   push:
-    branches: [main]
-    paths-ignore:
-      - "README.md"
-      - "README.zh-CN.md"
-      - "LICENSE"
-      - "package.json"
-      - "manifest.json"
+    tags:
+      - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.2.0). Leave empty to use manifest.json version.'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -30,30 +30,24 @@ jobs:
 
       - run: npm run build
 
-      - name: Get current version
-        id: current
-        run: echo "version=$(jq -r .version manifest.json)" >> "$GITHUB_OUTPUT"
+      - name: Package zip
+        run: zip mermaid-zoom.zip main.js manifest.json styles.css LICENSE
 
-      - name: Check if tag exists and bump if needed
+      - name: Determine version
         id: version
         run: |
-          VERSION="${{ steps.current.outputs.version }}"
-          # 校验版本号格式，防止命令注入
-          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "无效的版本号格式: $VERSION"
-            exit 1
+          if [[ -n "${{ inputs.version }}" ]]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/v}"
+            if [[ "$VERSION" == "$GITHUB_REF" ]]; then
+              VERSION=$(jq -r .version manifest.json)
+            fi
           fi
-          if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
-            IFS='.' read -r major minor patch <<< "$VERSION"
-            VERSION="$major.$minor.$((patch + 1))"
-            jq --arg v "$VERSION" '.version = $v' manifest.json > tmp.json && mv tmp.json manifest.json
-            jq --arg v "$VERSION" '.version = $v' package.json > tmp.json && mv tmp.json package.json
-            npm run build
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add manifest.json package.json
-            git commit -m "chore: bump version to ${VERSION} [skip ci]"
-            git push
+          # Validate version format
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version format: $VERSION"
+            exit 1
           fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
@@ -62,9 +56,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="v${{ steps.version.outputs.version }}"
-          git tag "$tag"
-          git push origin "$tag"
+          if ! git rev-parse "$tag" >/dev/null 2>&1; then
+            git tag "$tag"
+            git push origin "$tag"
+          fi
           gh release create "$tag" \
             --title "$tag" \
             --generate-notes \
-            main.js manifest.json styles.css
+            mermaid-zoom.zip main.js manifest.json styles.css
