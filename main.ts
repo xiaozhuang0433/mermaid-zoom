@@ -161,7 +161,10 @@ export default class MermaidZoomPlugin extends Plugin {
 		const parentWidth = targetParent.clientWidth || 600;
 		const containerHeight = Math.min(initialSvgHeight + 60, parentWidth);
 
-		// Create zoom container
+		// Create zoom container.
+		// No border/background/margin of its own: Obsidian already frames the
+		// mermaid code block, and adding another box here produced a nested
+		// "double border". Stay transparent so the native frame is the only one.
 		const container = createDiv('mermaid-zoom-container');
 		container.style.cssText = `
 			position: relative;
@@ -170,10 +173,7 @@ export default class MermaidZoomPlugin extends Plugin {
 			height: ${containerHeight}px;
 			min-width: 150px;
 			min-height: 100px;
-			background: var(--background-secondary);
-			border-radius: 8px;
-			border: 1px solid var(--background-modifier-border);
-			margin: 1em 0;
+			margin: 0;
 			padding: 1em;
 			padding-bottom: 2.5em;
 			box-sizing: border-box;

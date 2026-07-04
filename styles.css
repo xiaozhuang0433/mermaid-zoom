@@ -5,6 +5,27 @@
 	display: block;
 }
 
+/* Keep stroke width constant under CSS zoom scaling.
+   Without this, fit-to-container (which scales the diagram down) makes
+   connector lines thin and faint. non-scaling-stroke renders strokes at a
+   fixed screen width regardless of the transform scale, so lines stay
+   crisp and visible at any zoom level. Applies to both inline and modal. */
+.mermaid-zoom-content svg *,
+.mermaid-zoom-modal-wrapper svg * {
+	vector-effect: non-scaling-stroke;
+}
+
+/* Mermaid ships with a light "default" theme (dark text #333, light node
+   fills). In dark mode Obsidian makes native diagrams readable by applying an
+   invert filter; the zoom container doesn't inherit that, so the raw light
+   theme shows up as gray text/lines and wrong node colors on a dark backdrop.
+   Re-apply the same standard dark-mode invert here (inline + modal).
+   invert flips light<->dark, hue-rotate(180deg) keeps colors natural. */
+.theme-dark .mermaid-zoom-content svg,
+.theme-dark .mermaid-zoom-modal-wrapper svg {
+	filter: invert(1) hue-rotate(180deg);
+}
+
 /* Container cursor states */
 .mermaid-zoom-content {
 	cursor: grab;
