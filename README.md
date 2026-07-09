@@ -9,12 +9,13 @@ An Obsidian plugin that adds zoom and pan functionality to Mermaid diagrams.
 
 ## Features
 
-- **Mouse Wheel Zoom** - Scroll over any Mermaid diagram to zoom in and out
+- **Mouse Wheel Zoom** - Opt-in wheel zoom via a per-diagram toggle (off by default, so the page still scrolls normally)
 - **Drag to Pan** - Click and drag to move around your diagrams
 - **Touch Gestures** - Pinch to zoom and drag to pan on mobile devices
 - **Control Buttons** - Quick access to zoom in, zoom out, and reset buttons
 - **Scale Indicator** - Real-time display of current zoom level
 - **Fullscreen Mode** - Open diagrams in a modal for better viewing
+- **Resizable Containers** - Drag the edges or corners of any diagram to resize its container
 
 ## Installation
 
@@ -39,8 +40,9 @@ Once approved, install directly from Obsidian's community plugins browser.
 
 | Action | Description |
 |--------|-------------|
-| **Zoom** | Hover over a Mermaid diagram and scroll the mouse wheel |
+| **Zoom** | Enable the *Wheel zoom* toggle on a diagram, then scroll the wheel over it |
 | **Pan** | Click and drag to move the diagram |
+| **Resize** | Drag an edge or corner of the diagram container |
 | **Fullscreen** | Click the fullscreen button to open in modal view |
 
 ### Touch Controls (Mobile)
@@ -54,6 +56,7 @@ Once approved, install directly from Obsidian's community plugins browser.
 
 Located in the bottom-right corner of each diagram:
 
+- **Wheel zoom** toggle - Enable wheel-to-zoom for this diagram (off by default)
 - **`+`** - Zoom in
 - **`-`** - Zoom out
 - **`⟲`** - Reset to fit
@@ -74,7 +77,9 @@ npm run build
 
 ## How It Works
 
-The plugin automatically detects all Mermaid diagrams rendered in Obsidian and wraps each one in a zoomable container. Zoom range is configurable from 10% to 500%.
+The plugin automatically detects all Mermaid diagrams rendered in Obsidian and wraps each one in a zoomable, resizable container. Each container can be resized by dragging its edges or corners. Zoom range is from 10% to 500%.
+
+Wheel zoom is off by default in the inline view (so the page scrolls normally); enable it per diagram with the **Wheel zoom** toggle. In the fullscreen modal, wheel zoom is always active.
 
 Original SVG dimensions are cached to ensure consistent scaling behavior when resetting or resizing.
 
