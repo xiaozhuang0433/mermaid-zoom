@@ -1,4 +1,4 @@
-import { Plugin, ToggleComponent } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, ToggleComponent } from 'obsidian';
 
 interface ZoomState {
 	scale: number;
@@ -21,6 +21,20 @@ interface ZoomState {
 	wheelZoomEnabled: boolean;
 }
 
+interface MermaidZoomSettings {
+	defaultZoom: number; // percentage, e.g. 100 means 100%
+	showContainerBorder: boolean;
+	alignment: 'left' | 'center' | 'right';
+	maxHeight: number; // pixels, 0 = auto (fit content at current zoom)
+}
+
+const DEFAULT_SETTINGS: MermaidZoomSettings = {
+	defaultZoom: 100,
+	showContainerBorder: false,
+	alignment: 'center',
+	maxHeight: 0,
+};
+
 export default class MermaidZoomPlugin extends Plugin {
 	private readonly zoomStates = new Map<HTMLElement, ZoomState>();
 	private readonly defaultMinScale = 0.1;
@@ -29,8 +43,20 @@ export default class MermaidZoomPlugin extends Plugin {
 	private mutationObserver?: MutationObserver;
 	private resizeObserver?: ResizeObserver;
 	private processedElements = new WeakSet<SVGSVGElement>();
+	settings: MermaidZoomSettings = DEFAULT_SETTINGS;
 
-	onload() {
+	async loadSettings() {
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
+
+	async saveSettings() {
+		await this.saveData(this.settings);
+	}
+
+	async onload() {
+		await this.loadSettings();
+		this.addSettingTab(new MermaidZoomSettingTab(this.app, this));
+
 		console.debug('Loading Mermaid Zoom plugin');
 
 		// Set up observers
@@ -153,30 +179,26 @@ export default class MermaidZoomPlugin extends Plugin {
 
 		if (!targetParent) return;
 
-		// Get SVG dimensions for initial container sizing
-		const initialSvgRect = svg.getBoundingClientRect();
-		const initialSvgHeight = initialSvgRect.height || 200;
-
-		// Container height: based on SVG aspect ratio, capped reasonably
-		const parentWidth = targetParent.clientWidth || 600;
-		const containerHeight = Math.min(initialSvgHeight + 60, parentWidth);
-
 		// Create zoom container.
 		// No border/background/margin of its own: Obsidian already frames the
 		// mermaid code block, and adding another box here produced a nested
 		// "double border". Stay transparent so the native frame is the only one.
+		// Height is intentionally left unset here: the SVG hasn't been moved into
+		// contentWrapper yet, so measuring it now can be stale (e.g. if the old
+		// parent constrained its rendered width/height). We size the container
+		// after the move, once we can measure the SVG's true dimensions.
 		const container = createDiv('mermaid-zoom-container');
 		container.style.cssText = `
 			position: relative;
 			overflow: hidden;
 			width: 100%;
-			height: ${containerHeight}px;
 			min-width: 150px;
 			min-height: 100px;
 			margin: 0;
 			padding: 1em;
 			padding-bottom: 2.5em;
 			box-sizing: border-box;
+			${this.settings.showContainerBorder ? 'border: 1px dashed var(--background-modifier-border); border-radius: 4px;' : ''}
 		`;
 
 		// Create content wrapper for transformations
@@ -191,10 +213,29 @@ export default class MermaidZoomPlugin extends Plugin {
 		targetParent.insertBefore(container, targetElement);
 		contentWrapper.appendChild(targetElement);
 
-		// Get SVG original dimensions before any scaling
+		// Get SVG original dimensions after the move, so measurements reflect its
+		// true unconstrained size rather than whatever the old parent forced.
 		const svgRect = svg.getBoundingClientRect();
 		const svgOriginalWidth = svgRect.width || svg.clientWidth || 300;
 		const svgOriginalHeight = svgRect.height || svg.clientHeight || 200;
+
+		// Now that the container is laid out and the SVG's real size is known,
+		// compute the container height so the diagram is fully visible at the
+		// chosen default zoom (bounded only by available width, never clipped
+		// by height) unless maxHeight caps it.
+		const computedStyle = getComputedStyle(container);
+		const paddingTop = parseFloat(computedStyle.paddingTop) || 0;
+		const paddingBottom = parseFloat(computedStyle.paddingBottom) || 0;
+		const paddingLeft = parseFloat(computedStyle.paddingLeft) || 0;
+		const paddingRight = parseFloat(computedStyle.paddingRight) || 0;
+		const availableWidth = container.clientWidth - paddingLeft - paddingRight;
+		const defaultZoomScale = this.settings.defaultZoom / 100;
+		const effectiveScale = Math.min(availableWidth / svgOriginalWidth, defaultZoomScale);
+		const naturalHeight = svgOriginalHeight * effectiveScale + paddingTop + paddingBottom;
+		const containerHeight = this.settings.maxHeight > 0
+			? Math.min(naturalHeight, this.settings.maxHeight)
+			: naturalHeight;
+		container.style.height = `${containerHeight}px`;
 
 		// Initialize zoom state
 		const state: ZoomState = {
@@ -250,17 +291,29 @@ export default class MermaidZoomPlugin extends Plugin {
 		// 计算适配缩放比例
 		const scaleX = availableWidth / svgWidth;
 		const scaleY = availableHeight / svgHeight;
-		const fitScale = Math.min(scaleX, scaleY, 1); // 不超过 100%
+		const fitScale = Math.min(scaleX, scaleY, this.settings.defaultZoom / 100);
 
-		// 基于容器全宽居中（与全屏模态框一致），减去左内边距得到 translateX
+		// Calculate horizontal position based on alignment setting
 		const scaledWidth = svgWidth * fitScale;
 		const scaledHeight = svgHeight * fitScale;
-		const centerX = (container.clientWidth - scaledWidth) / 2 - paddingLeft;
+		let offsetX: number;
+		switch (this.settings.alignment) {
+			case 'left':
+				offsetX = 0;
+				break;
+			case 'right':
+				offsetX = availableWidth - scaledWidth;
+				break;
+			case 'center':
+			default:
+				offsetX = (availableWidth - scaledWidth) / 2;
+				break;
+		}
 		const centerY = (container.clientHeight - scaledHeight) / 2 - paddingTop;
 
-		// 应用缩放和居中
+		// Apply scale and position
 		state.scale = fitScale;
-		state.translateX = centerX;
+		state.translateX = offsetX;
 		state.translateY = Math.max(0, centerY);
 		this.updateTransform(contentWrapper, state);
 	}
@@ -955,5 +1008,73 @@ export default class MermaidZoomPlugin extends Plugin {
 
 		this.zoomStates.clear();
 		this.processedElements = new WeakSet();
+	}
+}
+
+class MermaidZoomSettingTab extends PluginSettingTab {
+	plugin: MermaidZoomPlugin;
+
+	constructor(app: App, plugin: MermaidZoomPlugin) {
+		super(app, plugin);
+		this.plugin = plugin;
+	}
+
+	display(): void {
+		const { containerEl } = this;
+		containerEl.empty();
+
+		containerEl.createEl('h2', { text: 'Mermaid Zoom Settings' });
+
+		new Setting(containerEl)
+			.setName('Default zoom level')
+			.setDesc('Initial zoom percentage when a Mermaid diagram is rendered. 100% fits the container; higher values make diagrams appear larger by default.')
+			.addSlider(slider => slider
+				.setLimits(50, 300, 5)
+				.setValue(this.plugin.settings.defaultZoom)
+				.setDynamicTooltip()
+				.onChange(async (value) => {
+					this.plugin.settings.defaultZoom = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Show container border')
+			.setDesc('Display a dashed border around each diagram container to help visualize the zoom area boundaries.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showContainerBorder)
+				.onChange(async (value) => {
+					this.plugin.settings.showContainerBorder = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Default alignment')
+			.setDesc('Horizontal alignment of the diagram within its container.')
+			.addDropdown(dropdown => dropdown
+				.addOption('left', 'Left')
+				.addOption('center', 'Center')
+				.addOption('right', 'Right')
+				.setValue(this.plugin.settings.alignment)
+				.onChange(async (value) => {
+					this.plugin.settings.alignment = value as 'left' | 'center' | 'right';
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Max container height')
+			.setDesc('Maximum height in pixels for the zoom container. Set to 0 to auto-size so the diagram is fully visible at the current zoom level.')
+			.addText(text => text
+				.setPlaceholder('0')
+				.setValue(this.plugin.settings.maxHeight > 0 ? String(this.plugin.settings.maxHeight) : '')
+				.onChange(async (value) => {
+					const num = parseInt(value, 10);
+					this.plugin.settings.maxHeight = isNaN(num) || num < 0 ? 0 : num;
+					await this.plugin.saveSettings();
+				}));
+
+		containerEl.createEl('p', {
+			text: 'Changes apply to newly rendered diagrams. Reload the note to see the effect on existing diagrams.',
+			cls: 'setting-item-description'
+		});
 	}
 }
