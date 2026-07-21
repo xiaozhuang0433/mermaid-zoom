@@ -179,36 +179,26 @@ export default class MermaidZoomPlugin extends Plugin {
 
 		if (!targetParent) return;
 
-		// Get SVG dimensions for initial container sizing
-		const initialSvgRect = svg.getBoundingClientRect();
-		const initialSvgHeight = initialSvgRect.height || 200;
-
-		// Container height: scale with default zoom so the diagram is fully visible.
-		// When maxHeight is set (> 0), cap the container at that value.
-		const parentWidth = targetParent.clientWidth || 600;
-		const defaultZoomScale = this.settings.defaultZoom / 100;
-		const naturalHeight = initialSvgHeight * defaultZoomScale + 60;
-		const containerHeight = this.settings.maxHeight > 0
-			? Math.min(naturalHeight, this.settings.maxHeight)
-			: naturalHeight;
-
 		// Create zoom container.
 		// No border/background/margin of its own: Obsidian already frames the
 		// mermaid code block, and adding another box here produced a nested
 		// "double border". Stay transparent so the native frame is the only one.
+		// Height is intentionally left unset here: the SVG hasn't been moved into
+		// contentWrapper yet, so measuring it now can be stale (e.g. if the old
+		// parent constrained its rendered width/height). We size the container
+		// after the move, once we can measure the SVG's true dimensions.
 		const container = createDiv('mermaid-zoom-container');
 		container.style.cssText = `
 			position: relative;
 			overflow: hidden;
 			width: 100%;
-			height: ${containerHeight}px;
 			min-width: 150px;
 			min-height: 100px;
 			margin: 0;
 			padding: 1em;
 			padding-bottom: 2.5em;
 			box-sizing: border-box;
-				${this.settings.showContainerBorder ? 'border: 1px dashed var(--background-modifier-border); border-radius: 4px;' : ''}
+			${this.settings.showContainerBorder ? 'border: 1px dashed var(--background-modifier-border); border-radius: 4px;' : ''}
 		`;
 
 		// Create content wrapper for transformations
@@ -223,10 +213,29 @@ export default class MermaidZoomPlugin extends Plugin {
 		targetParent.insertBefore(container, targetElement);
 		contentWrapper.appendChild(targetElement);
 
-		// Get SVG original dimensions before any scaling
+		// Get SVG original dimensions after the move, so measurements reflect its
+		// true unconstrained size rather than whatever the old parent forced.
 		const svgRect = svg.getBoundingClientRect();
 		const svgOriginalWidth = svgRect.width || svg.clientWidth || 300;
 		const svgOriginalHeight = svgRect.height || svg.clientHeight || 200;
+
+		// Now that the container is laid out and the SVG's real size is known,
+		// compute the container height so the diagram is fully visible at the
+		// chosen default zoom (bounded only by available width, never clipped
+		// by height) unless maxHeight caps it.
+		const computedStyle = getComputedStyle(container);
+		const paddingTop = parseFloat(computedStyle.paddingTop) || 0;
+		const paddingBottom = parseFloat(computedStyle.paddingBottom) || 0;
+		const paddingLeft = parseFloat(computedStyle.paddingLeft) || 0;
+		const paddingRight = parseFloat(computedStyle.paddingRight) || 0;
+		const availableWidth = container.clientWidth - paddingLeft - paddingRight;
+		const defaultZoomScale = this.settings.defaultZoom / 100;
+		const effectiveScale = Math.min(availableWidth / svgOriginalWidth, defaultZoomScale);
+		const naturalHeight = svgOriginalHeight * effectiveScale + paddingTop + paddingBottom;
+		const containerHeight = this.settings.maxHeight > 0
+			? Math.min(naturalHeight, this.settings.maxHeight)
+			: naturalHeight;
+		container.style.height = `${containerHeight}px`;
 
 		// Initialize zoom state
 		const state: ZoomState = {
