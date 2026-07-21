@@ -25,12 +25,14 @@ interface MermaidZoomSettings {
 	defaultZoom: number; // percentage, e.g. 100 means 100%
 	showContainerBorder: boolean;
 	alignment: 'left' | 'center' | 'right';
+	maxHeight: number; // pixels, 0 = auto (fit content at current zoom)
 }
 
 const DEFAULT_SETTINGS: MermaidZoomSettings = {
 	defaultZoom: 100,
 	showContainerBorder: false,
 	alignment: 'center',
+	maxHeight: 0,
 };
 
 export default class MermaidZoomPlugin extends Plugin {
@@ -181,10 +183,14 @@ export default class MermaidZoomPlugin extends Plugin {
 		const initialSvgRect = svg.getBoundingClientRect();
 		const initialSvgHeight = initialSvgRect.height || 200;
 
-		// Container height: based on SVG aspect ratio, capped reasonably
+		// Container height: scale with default zoom so the diagram is fully visible.
+		// When maxHeight is set (> 0), cap the container at that value.
 		const parentWidth = targetParent.clientWidth || 600;
 		const defaultZoomScale = this.settings.defaultZoom / 100;
-		const containerHeight = Math.min(initialSvgHeight * defaultZoomScale + 60, parentWidth * defaultZoomScale);
+		const naturalHeight = initialSvgHeight * defaultZoomScale + 60;
+		const containerHeight = this.settings.maxHeight > 0
+			? Math.min(naturalHeight, this.settings.maxHeight)
+			: naturalHeight;
 
 		// Create zoom container.
 		// No border/background/margin of its own: Obsidian already frames the
@@ -1042,6 +1048,18 @@ class MermaidZoomSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.alignment)
 				.onChange(async (value) => {
 					this.plugin.settings.alignment = value as 'left' | 'center' | 'right';
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Max container height')
+			.setDesc('Maximum height in pixels for the zoom container. Set to 0 to auto-size so the diagram is fully visible at the current zoom level.')
+			.addText(text => text
+				.setPlaceholder('0')
+				.setValue(this.plugin.settings.maxHeight > 0 ? String(this.plugin.settings.maxHeight) : '')
+				.onChange(async (value) => {
+					const num = parseInt(value, 10);
+					this.plugin.settings.maxHeight = isNaN(num) || num < 0 ? 0 : num;
 					await this.plugin.saveSettings();
 				}));
 
