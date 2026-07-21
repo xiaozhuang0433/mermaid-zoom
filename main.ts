@@ -1,4 +1,4 @@
-import { Plugin, ToggleComponent } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, ToggleComponent } from 'obsidian';
 
 interface ZoomState {
 	scale: number;
@@ -21,6 +21,14 @@ interface ZoomState {
 	wheelZoomEnabled: boolean;
 }
 
+interface MermaidZoomSettings {
+	defaultZoom: number; // percentage, e.g. 100 means 100%
+}
+
+const DEFAULT_SETTINGS: MermaidZoomSettings = {
+	defaultZoom: 100,
+};
+
 export default class MermaidZoomPlugin extends Plugin {
 	private readonly zoomStates = new Map<HTMLElement, ZoomState>();
 	private readonly defaultMinScale = 0.1;
@@ -29,8 +37,20 @@ export default class MermaidZoomPlugin extends Plugin {
 	private mutationObserver?: MutationObserver;
 	private resizeObserver?: ResizeObserver;
 	private processedElements = new WeakSet<SVGSVGElement>();
+	settings: MermaidZoomSettings = DEFAULT_SETTINGS;
 
-	onload() {
+	async loadSettings() {
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
+
+	async saveSettings() {
+		await this.saveData(this.settings);
+	}
+
+	async onload() {
+		await this.loadSettings();
+		this.addSettingTab(new MermaidZoomSettingTab(this.app, this));
+
 		console.debug('Loading Mermaid Zoom plugin');
 
 		// Set up observers
@@ -250,7 +270,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		// 计算适配缩放比例
 		const scaleX = availableWidth / svgWidth;
 		const scaleY = availableHeight / svgHeight;
-		const fitScale = Math.min(scaleX, scaleY, 1); // 不超过 100%
+		const fitScale = Math.min(scaleX, scaleY, this.settings.defaultZoom / 100);
 
 		// 基于容器全宽居中（与全屏模态框一致），减去左内边距得到 translateX
 		const scaledWidth = svgWidth * fitScale;
@@ -955,5 +975,38 @@ export default class MermaidZoomPlugin extends Plugin {
 
 		this.zoomStates.clear();
 		this.processedElements = new WeakSet();
+	}
+}
+
+class MermaidZoomSettingTab extends PluginSettingTab {
+	plugin: MermaidZoomPlugin;
+
+	constructor(app: App, plugin: MermaidZoomPlugin) {
+		super(app, plugin);
+		this.plugin = plugin;
+	}
+
+	display(): void {
+		const { containerEl } = this;
+		containerEl.empty();
+
+		containerEl.createEl('h2', { text: 'Mermaid Zoom Settings' });
+
+		new Setting(containerEl)
+			.setName('Default zoom level')
+			.setDesc('Initial zoom percentage when a Mermaid diagram is rendered. 100% fits the container; higher values make diagrams appear larger by default.')
+			.addSlider(slider => slider
+				.setLimits(50, 300, 5)
+				.setValue(this.plugin.settings.defaultZoom)
+				.setDynamicTooltip()
+				.onChange(async (value) => {
+					this.plugin.settings.defaultZoom = value;
+					await this.plugin.saveSettings();
+				}));
+
+		containerEl.createEl('p', {
+			text: 'Changes apply to newly rendered diagrams. Reload the note to see the effect on existing diagrams.',
+			cls: 'setting-item-description'
+		});
 	}
 }
