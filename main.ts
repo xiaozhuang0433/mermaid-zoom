@@ -24,11 +24,13 @@ interface ZoomState {
 interface MermaidZoomSettings {
 	defaultZoom: number; // percentage, e.g. 100 means 100%
 	showContainerBorder: boolean;
+	alignment: 'left' | 'center' | 'right';
 }
 
 const DEFAULT_SETTINGS: MermaidZoomSettings = {
 	defaultZoom: 100,
 	showContainerBorder: false,
+	alignment: 'center',
 };
 
 export default class MermaidZoomPlugin extends Plugin {
@@ -276,15 +278,27 @@ export default class MermaidZoomPlugin extends Plugin {
 		const scaleY = availableHeight / svgHeight;
 		const fitScale = Math.min(scaleX, scaleY, this.settings.defaultZoom / 100);
 
-		// 基于容器全宽居中（与全屏模态框一致），减去左内边距得到 translateX
+		// Calculate horizontal position based on alignment setting
 		const scaledWidth = svgWidth * fitScale;
 		const scaledHeight = svgHeight * fitScale;
-		const centerX = (container.clientWidth - scaledWidth) / 2 - paddingLeft;
+		let offsetX: number;
+		switch (this.settings.alignment) {
+			case 'left':
+				offsetX = 0;
+				break;
+			case 'right':
+				offsetX = availableWidth - scaledWidth;
+				break;
+			case 'center':
+			default:
+				offsetX = (availableWidth - scaledWidth) / 2;
+				break;
+		}
 		const centerY = (container.clientHeight - scaledHeight) / 2 - paddingTop;
 
-		// 应用缩放和居中
+		// Apply scale and position
 		state.scale = fitScale;
-		state.translateX = centerX;
+		state.translateX = offsetX;
 		state.translateY = Math.max(0, centerY);
 		this.updateTransform(contentWrapper, state);
 	}
@@ -1015,6 +1029,19 @@ class MermaidZoomSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.showContainerBorder)
 				.onChange(async (value) => {
 					this.plugin.settings.showContainerBorder = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Default alignment')
+			.setDesc('Horizontal alignment of the diagram within its container.')
+			.addDropdown(dropdown => dropdown
+				.addOption('left', 'Left')
+				.addOption('center', 'Center')
+				.addOption('right', 'Right')
+				.setValue(this.plugin.settings.alignment)
+				.onChange(async (value) => {
+					this.plugin.settings.alignment = value as 'left' | 'center' | 'right';
 					await this.plugin.saveSettings();
 				}));
 
