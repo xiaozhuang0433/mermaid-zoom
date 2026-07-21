@@ -23,10 +23,12 @@ interface ZoomState {
 
 interface MermaidZoomSettings {
 	defaultZoom: number; // percentage, e.g. 100 means 100%
+	showContainerBorder: boolean;
 }
 
 const DEFAULT_SETTINGS: MermaidZoomSettings = {
 	defaultZoom: 100,
+	showContainerBorder: false,
 };
 
 export default class MermaidZoomPlugin extends Plugin {
@@ -179,7 +181,8 @@ export default class MermaidZoomPlugin extends Plugin {
 
 		// Container height: based on SVG aspect ratio, capped reasonably
 		const parentWidth = targetParent.clientWidth || 600;
-		const containerHeight = Math.min(initialSvgHeight + 60, parentWidth);
+		const defaultZoomScale = this.settings.defaultZoom / 100;
+		const containerHeight = Math.min(initialSvgHeight * defaultZoomScale + 60, parentWidth * defaultZoomScale);
 
 		// Create zoom container.
 		// No border/background/margin of its own: Obsidian already frames the
@@ -197,6 +200,7 @@ export default class MermaidZoomPlugin extends Plugin {
 			padding: 1em;
 			padding-bottom: 2.5em;
 			box-sizing: border-box;
+				${this.settings.showContainerBorder ? 'border: 1px dashed var(--background-modifier-border); border-radius: 4px;' : ''}
 		`;
 
 		// Create content wrapper for transformations
@@ -1001,6 +1005,16 @@ class MermaidZoomSettingTab extends PluginSettingTab {
 				.setDynamicTooltip()
 				.onChange(async (value) => {
 					this.plugin.settings.defaultZoom = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Show container border')
+			.setDesc('Display a dashed border around each diagram container to help visualize the zoom area boundaries.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showContainerBorder)
+				.onChange(async (value) => {
+					this.plugin.settings.showContainerBorder = value;
 					await this.plugin.saveSettings();
 				}));
 
