@@ -75,6 +75,12 @@ npm run dev
 npm run build
 ```
 
+## Settings
+
+The plugin provides the following settings in Obsidian's plugin settings:
+
+- **Default zoom level** — Initial zoom percentage when a diagram is rendered (50–300%, default 100%). Set it higher (e.g., 150%) if you prefer diagrams to appear larger without zooming in manually each time. Note: changes only apply to newly rendered diagrams; reload the note to see the effect.
+
 ## How It Works
 
 The plugin automatically detects all Mermaid diagrams rendered in Obsidian and wraps each one in a zoomable, resizable container. Each container can be resized by dragging its edges or corners. Zoom range is from 10% to 500%.
