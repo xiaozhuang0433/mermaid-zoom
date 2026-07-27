@@ -2,6 +2,7 @@ import { Plugin, ToggleComponent } from 'obsidian';
 import { MermaidZoomSettings, DEFAULT_SETTINGS, MermaidZoomSettingTab } from './settings';
 import { ZoomState, updateTransform, zoom, addWheelZoom, addDragPan, addTouchGestures, addResizeHandles } from './gestures';
 import { t } from './i18n';
+import { exportDiagramPng } from './export';
 
 export default class MermaidZoomPlugin extends Plugin {
 	private readonly zoomStates = new Map<HTMLElement, ZoomState>();
@@ -420,6 +421,15 @@ export default class MermaidZoomPlugin extends Plugin {
 			this.fitToContainerModal(modalZoomContainer, modalContentWrapper, modalState);
 		});
 
+		// Export PNG button
+		const exportBtn = document.createElement('button');
+		exportBtn.textContent = '⤓';
+		exportBtn.title = t('export.buttonTitle');
+		this.styleButton(exportBtn);
+		exportBtn.addEventListener('click', () => {
+			void exportDiagramPng(this.app, state.svg, state.svgOriginalWidth, state.svgOriginalHeight, this.settings.exportDestination);
+		});
+
 		// Scale indicator
 		const scaleIndicator = document.createElement('span');
 		scaleIndicator.style.cssText = `
@@ -589,6 +599,18 @@ export default class MermaidZoomPlugin extends Plugin {
 		resetBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
 			this.fitToContainer(state.container, contentWrapper, state.svg, state);
+		});
+
+		// Export PNG button
+		const exportBtn = controls.createEl('button', {
+			text: '⤓',
+			cls: 'mermaid-zoom-btn'
+		});
+		exportBtn.title = t('export.buttonTitle');
+		this.styleButton(exportBtn);
+		exportBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			void exportDiagramPng(this.app, state.svg, state.svgOriginalWidth, state.svgOriginalHeight, this.settings.exportDestination);
 		});
 
 		// Scale indicator

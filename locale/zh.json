@@ -11,5 +11,13 @@
   "setting.maxHeight.name": "最大容器高度",
   "setting.maxHeight.desc": "缩放容器的最大高度（像素）。设为 0 表示自动适配，使图表在当前缩放级别下完整可见。",
   "settings.note": "更改仅对新渲染的图表生效。重新打开笔记即可看到对已有图表的影响。",
-  "wheelZoom.label": "滚轮缩放"
+  "wheelZoom.label": "滚轮缩放",
+  "setting.exportDestination.name": "PNG 导出位置",
+  "setting.exportDestination.desc": "导出的图表 PNG 图片保存到哪里。",
+  "setting.exportDestination.option.vault": "仓库（附件目录）",
+  "setting.exportDestination.option.download": "下载到本地",
+  "export.buttonTitle": "导出为 PNG",
+  "export.savedNotice": "已保存：{path}",
+  "export.downloadedNotice": "已下载：{name}",
+  "export.failedNotice": "导出 PNG 失败"
 }

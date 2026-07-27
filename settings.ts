@@ -2,12 +2,14 @@ import type { App, SettingDefinitionItem } from 'obsidian';
 import { PluginSettingTab, Setting } from 'obsidian';
 import type MermaidZoomPlugin from './main';
 import { t } from './i18n';
+import type { ExportDestination } from './export';
 
 export interface MermaidZoomSettings {
 	defaultZoom: number; // percentage, e.g. 100 means 100%
 	showContainerBorder: boolean;
 	alignment: 'left' | 'center' | 'right';
 	maxHeight: number; // pixels, 0 = auto (fit content at current zoom)
+	exportDestination: ExportDestination; // 'vault' | 'download'
 }
 
 export const DEFAULT_SETTINGS: MermaidZoomSettings = {
@@ -15,6 +17,7 @@ export const DEFAULT_SETTINGS: MermaidZoomSettings = {
 	showContainerBorder: false,
 	alignment: 'center',
 	maxHeight: 0,
+	exportDestination: 'vault',
 };
 
 export class MermaidZoomSettingTab extends PluginSettingTab {
@@ -79,6 +82,19 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 					step: 1,
 				},
 			},
+			{
+				name: t('setting.exportDestination.name'),
+				desc: t('setting.exportDestination.desc'),
+				control: {
+					type: 'dropdown',
+					key: 'exportDestination',
+					options: {
+						vault: t('setting.exportDestination.option.vault'),
+						download: t('setting.exportDestination.option.download'),
+					},
+					defaultValue: 'vault',
+				},
+			},
 		];
 	}
 
@@ -137,6 +153,18 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					const num = parseInt(value, 10);
 					this.plugin.settings.maxHeight = isNaN(num) || num < 0 ? 0 : num;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName(t('setting.exportDestination.name'))
+			.setDesc(t('setting.exportDestination.desc'))
+			.addDropdown(dropdown => dropdown
+				.addOption('vault', t('setting.exportDestination.option.vault'))
+				.addOption('download', t('setting.exportDestination.option.download'))
+				.setValue(this.plugin.settings.exportDestination)
+				.onChange(async (value) => {
+					this.plugin.settings.exportDestination = value as ExportDestination;
 					await this.plugin.saveSettings();
 				}));
 
