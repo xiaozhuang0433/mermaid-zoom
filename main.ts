@@ -49,7 +49,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		// Listen for file open
 		this.registerEvent(this.app.workspace.on('file-open', () => {
 			// Delay to allow mermaid to render
-			setTimeout(() => this.processAllMermaidDiagrams(), 200);
+			window.setTimeout(() => this.processAllMermaidDiagrams(), 200);
 		}));
 	}
 
@@ -472,7 +472,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		document.body.appendChild(modal);
 
 		// 模态框可见后适配容器
-		requestAnimationFrame(() => {
+		window.requestAnimationFrame(() => {
 			this.fitToContainerModal(modalZoomContainer, modalContentWrapper, modalState);
 		});
 	}
