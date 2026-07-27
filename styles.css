@@ -35,44 +35,54 @@
 	cursor: grabbing;
 }
 
-/* Resizing cursor states */
-body.mermaid-zoom-resizing-nwse {
-	cursor: nwse-resize !important;
-	user-select: none !important;
+/* Resizing cursor states. Applied to body AND all descendants so the cursor
+   stays locked during a resize drag, overriding per-element cursors (e.g. the
+   grab cursor on .mermaid-zoom-content) via higher specificity. */
+body.mermaid-zoom-resizing-nwse,
+body.mermaid-zoom-resizing-nwse * {
+	cursor: nwse-resize;
+	user-select: none;
 }
 
-body.mermaid-zoom-resizing-nesw {
-	cursor: nesw-resize !important;
-	user-select: none !important;
+body.mermaid-zoom-resizing-nesw,
+body.mermaid-zoom-resizing-nesw * {
+	cursor: nesw-resize;
+	user-select: none;
 }
 
-body.mermaid-zoom-resizing-ns {
-	cursor: ns-resize !important;
-	user-select: none !important;
+body.mermaid-zoom-resizing-ns,
+body.mermaid-zoom-resizing-ns * {
+	cursor: ns-resize;
+	user-select: none;
 }
 
-body.mermaid-zoom-resizing-ew {
-	cursor: ew-resize !important;
-	user-select: none !important;
+body.mermaid-zoom-resizing-ew,
+body.mermaid-zoom-resizing-ew * {
+	cursor: ew-resize;
+	user-select: none;
 }
 
-/* Modal close button hover */
+/* Modal close button. Background lives in CSS (not inline) so :hover can
+   override it through the normal cascade. */
+.mermaid-zoom-modal-close {
+	background: var(--interactive-normal);
+}
+
 .mermaid-zoom-modal-close:hover {
-	background: var(--interactive-hover) !important;
+	background: var(--interactive-hover);
 }
 
-/* Zoom button hover */
+/* Zoom buttons — same reason: background declared here, not as an inline style. */
+.mermaid-zoom-btn {
+	background: var(--interactive-normal);
+}
+
 .mermaid-zoom-btn:hover {
-	background: var(--interactive-hover) !important;
+	background: var(--interactive-hover);
 }
 
-/* Fullscreen button padding */
-.mermaid-fullscreen-btn {
-	padding: 6px !important;
-}
-
-/* Resizing state */
-body.mermaid-zoom-resizing {
-	cursor: inherit !important;
-	user-select: none !important;
+/* Fullscreen button padding (compound selector raises specificity above
+   Obsidian's generic button reset). */
+.mermaid-zoom-btn.mermaid-fullscreen-btn {
+	padding: 6px;
 }

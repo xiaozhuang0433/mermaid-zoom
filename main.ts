@@ -320,7 +320,6 @@ export default class MermaidZoomPlugin extends Plugin {
 			width: 32px;
 			height: 32px;
 			border: none;
-			background: var(--interactive-normal);
 			color: var(--text-normal);
 			border-radius: 4px;
 			cursor: pointer;
@@ -651,11 +650,11 @@ export default class MermaidZoomPlugin extends Plugin {
 	}
 
 	private styleButton(btn: HTMLButtonElement) {
+		btn.addClass('mermaid-zoom-btn');
 		btn.style.cssText = `
 			width: 28px;
 			height: 28px;
 			border: none;
-			background: var(--interactive-normal);
 			color: var(--text-normal);
 			border-radius: 4px;
 			cursor: pointer;
