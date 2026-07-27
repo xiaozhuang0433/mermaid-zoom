@@ -1,4 +1,4 @@
-import type { App } from 'obsidian';
+import type { App, SettingDefinitionItem } from 'obsidian';
 import { PluginSettingTab, Setting } from 'obsidian';
 import type MermaidZoomPlugin from './main';
 
@@ -22,6 +22,66 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 	constructor(app: App, plugin: MermaidZoomPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+	}
+
+	// Declarative settings API (Obsidian 1.13.0+). When this returns a
+	// non-empty array, Obsidian renders the tab from these definitions and
+	// indexes them for settings search; display() is used as the fallback for
+	// older Obsidian versions.
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		return [
+			{
+				name: 'Default zoom level',
+				desc: 'Initial zoom percentage when a Mermaid diagram is rendered. 100% fits the container; higher values make diagrams appear larger by default.',
+				control: {
+					type: 'slider',
+					key: 'defaultZoom',
+					min: 50,
+					max: 300,
+					step: 5,
+					defaultValue: 100,
+					displayFormat: (value) => `${value}%`,
+				},
+			},
+			{
+				name: 'Show container border',
+				desc: 'Display a dashed border around each diagram container to help visualize the zoom area boundaries.',
+				control: {
+					type: 'toggle',
+					key: 'showContainerBorder',
+					defaultValue: false,
+				},
+			},
+			{
+				name: 'Default alignment',
+				desc: 'Horizontal alignment of the diagram within its container.',
+				control: {
+					type: 'dropdown',
+					key: 'alignment',
+					options: { left: 'Left', center: 'Center', right: 'Right' },
+					defaultValue: 'center',
+				},
+			},
+			{
+				name: 'Max container height',
+				desc: 'Maximum height in pixels for the zoom container. Set to 0 to auto-size so the diagram is fully visible at the current zoom level.',
+				control: {
+					type: 'number',
+					key: 'maxHeight',
+					defaultValue: 0,
+					placeholder: '0',
+					min: 0,
+					step: 1,
+				},
+			},
+		];
+	}
+
+	// Persist declarative-control writes through the plugin's own saver so
+	// data.json stays in sync. (The base reads from this.plugin.settings.)
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		(this.plugin.settings as unknown as Record<string, unknown>)[key] = value;
+		await this.plugin.saveSettings();
 	}
 
 	display(): void {
