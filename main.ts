@@ -1023,7 +1023,7 @@ class MermaidZoomSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl('h2', { text: 'Mermaid Zoom Settings' });
+		new Setting(containerEl).setName('Mermaid Zoom Settings').setHeading();
 
 		new Setting(containerEl)
 			.setName('Default zoom level')
