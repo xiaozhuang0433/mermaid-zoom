@@ -11,6 +11,7 @@ main.js
 main.js.map
 *.map
 mermaid-zoom.zip
+release/
 
 # OS files
 .DS_Store
