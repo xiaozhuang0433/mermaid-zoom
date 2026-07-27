@@ -22,7 +22,7 @@
 2. 下载最新版本的 `mermaid-zoom.zip`
 3. 解压到你的库的 plugins 目录：
    ```
-   <你的库>/.obsidian/plugins/mermaid-zoom
+   你的库/.obsidian/plugins/mermaid-zoom
    ```
 4. 在 Obsidian 中启用插件：
    - 打开 设置 → 社区插件
@@ -32,11 +32,11 @@
 
 1. 克隆此仓库到你的库的 plugins 目录：
    ```
-   <你的库>/.obsidian/plugins/mermaid-zoom
+   你的库/.obsidian/plugins/mermaid-zoom
    ```
 2. 安装依赖并构建：
    ```bash
-   cd <你的库>/.obsidian/plugins/mermaid-zoom
+   cd 你的库/.obsidian/plugins/mermaid-zoom
    npm install
    npm run build
    ```

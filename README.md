@@ -28,7 +28,7 @@ Once approved, install directly from Obsidian's community plugins browser.
 1. Download the latest release from [GitHub Releases](https://github.com/xiaozhuang0433/mermaid-zoom/releases)
 2. Extract to your vault's plugins directory:
    ```
-   <your-vault>/.obsidian/plugins/mermaid-zoom
+   your-vault/.obsidian/plugins/mermaid-zoom
    ```
 3. Enable the plugin in Obsidian:
    - Settings → Community Plugins
