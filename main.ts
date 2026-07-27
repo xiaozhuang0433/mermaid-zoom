@@ -1,6 +1,7 @@
 import { Plugin, ToggleComponent } from 'obsidian';
 import { MermaidZoomSettings, DEFAULT_SETTINGS, MermaidZoomSettingTab } from './settings';
 import { ZoomState, updateTransform, zoom, addWheelZoom, addDragPan, addTouchGestures, addResizeHandles } from './gestures';
+import { t } from './i18n';
 
 export default class MermaidZoomPlugin extends Plugin {
 	private readonly zoomStates = new Map<HTMLElement, ZoomState>();
@@ -535,7 +536,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		`;
 
 		const wheelZoomLabel = wheelZoomToggle.createEl('span', {
-			text: 'Wheel zoom',
+			text: t('wheelZoom.label'),
 			cls: 'mermaid-wheel-zoom-label'
 		});
 		wheelZoomLabel.style.cssText = `

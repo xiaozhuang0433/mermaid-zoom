@@ -1,0 +1,15 @@
+{
+  "setting.defaultZoom.name": "Niveau de zoom par défaut",
+  "setting.defaultZoom.desc": "Pourcentage de zoom initial lors du rendu d'un diagramme Mermaid. 100 % s'ajuste au conteneur ; des valeurs plus élevées affichent les diagrammes plus grands par défaut.",
+  "setting.containerBorder.name": "Afficher la bordure du conteneur",
+  "setting.containerBorder.desc": "Affiche une bordure en pointillés autour de chaque conteneur de diagramme pour mieux visualiser les limites de la zone de zoom.",
+  "setting.alignment.name": "Alignement par défaut",
+  "setting.alignment.desc": "Alignement horizontal du diagramme dans son conteneur.",
+  "setting.alignment.option.left": "Gauche",
+  "setting.alignment.option.center": "Centre",
+  "setting.alignment.option.right": "Droite",
+  "setting.maxHeight.name": "Hauteur maximale du conteneur",
+  "setting.maxHeight.desc": "Hauteur maximale en pixels du conteneur de zoom. Définir sur 0 pour ajuster automatiquement afin que le diagramme soit entièrement visible au niveau de zoom actuel.",
+  "settings.note": "Les modifications s'appliquent aux diagrammes nouvellement rendus. Rechargez la note pour voir l'effet sur les diagrammes existants.",
+  "wheelZoom.label": "Zoom à la molette"
+}

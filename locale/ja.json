@@ -1,0 +1,15 @@
+{
+  "setting.defaultZoom.name": "デフォルトのズームレベル",
+  "setting.defaultZoom.desc": "Mermaid 図がレンダリングされた際の初期ズーム倍率です。100% でコンテナに収まり、より大きな値にすると図が初期状態で大きく表示されます。",
+  "setting.containerBorder.name": "コンテナの枠線を表示",
+  "setting.containerBorder.desc": "各図のコンテナ周囲に破線の枠を表示し、ズーム領域の境界を見やすくします。",
+  "setting.alignment.name": "デフォルトの配置",
+  "setting.alignment.desc": "コンテナ内の図の水平方向の配置です。",
+  "setting.alignment.option.left": "左",
+  "setting.alignment.option.center": "中央",
+  "setting.alignment.option.right": "右",
+  "setting.maxHeight.name": "コンテナの最大高さ",
+  "setting.maxHeight.desc": "ズームコンテナの最大高さ（ピクセル）。0 に設定すると、現在のズーム倍率で図がすべて表示されるよう自動調整します。",
+  "settings.note": "変更は新しくレンダリングされた図にのみ適用されます。既存の図に反映させるにはノートを再読み込みしてください。",
+  "wheelZoom.label": "ホイールズーム"
+}

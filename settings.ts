@@ -1,6 +1,7 @@
 import type { App, SettingDefinitionItem } from 'obsidian';
 import { PluginSettingTab, Setting } from 'obsidian';
 import type MermaidZoomPlugin from './main';
+import { t } from './i18n';
 
 export interface MermaidZoomSettings {
 	defaultZoom: number; // percentage, e.g. 100 means 100%
@@ -31,8 +32,8 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 	getSettingDefinitions(): SettingDefinitionItem[] {
 		return [
 			{
-				name: 'Default zoom level',
-				desc: 'Initial zoom percentage when a Mermaid diagram is rendered. 100% fits the container; higher values make diagrams appear larger by default.',
+				name: t('setting.defaultZoom.name'),
+				desc: t('setting.defaultZoom.desc'),
 				control: {
 					type: 'slider',
 					key: 'defaultZoom',
@@ -44,8 +45,8 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 				},
 			},
 			{
-				name: 'Show container border',
-				desc: 'Display a dashed border around each diagram container to help visualize the zoom area boundaries.',
+				name: t('setting.containerBorder.name'),
+				desc: t('setting.containerBorder.desc'),
 				control: {
 					type: 'toggle',
 					key: 'showContainerBorder',
@@ -53,18 +54,22 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 				},
 			},
 			{
-				name: 'Default alignment',
-				desc: 'Horizontal alignment of the diagram within its container.',
+				name: t('setting.alignment.name'),
+				desc: t('setting.alignment.desc'),
 				control: {
 					type: 'dropdown',
 					key: 'alignment',
-					options: { left: 'Left', center: 'Center', right: 'Right' },
+					options: {
+						left: t('setting.alignment.option.left'),
+						center: t('setting.alignment.option.center'),
+						right: t('setting.alignment.option.right'),
+					},
 					defaultValue: 'center',
 				},
 			},
 			{
-				name: 'Max container height',
-				desc: 'Maximum height in pixels for the zoom container. Set to 0 to auto-size so the diagram is fully visible at the current zoom level.',
+				name: t('setting.maxHeight.name'),
+				desc: t('setting.maxHeight.desc'),
 				control: {
 					type: 'number',
 					key: 'maxHeight',
@@ -89,8 +94,8 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Default zoom level')
-			.setDesc('Initial zoom percentage when a Mermaid diagram is rendered. 100% fits the container; higher values make diagrams appear larger by default.')
+			.setName(t('setting.defaultZoom.name'))
+			.setDesc(t('setting.defaultZoom.desc'))
 			.addSlider(slider => slider
 				.setLimits(50, 300, 5)
 				.setValue(this.plugin.settings.defaultZoom)
@@ -101,8 +106,8 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Show container border')
-			.setDesc('Display a dashed border around each diagram container to help visualize the zoom area boundaries.')
+			.setName(t('setting.containerBorder.name'))
+			.setDesc(t('setting.containerBorder.desc'))
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.showContainerBorder)
 				.onChange(async (value) => {
@@ -111,12 +116,12 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Default alignment')
-			.setDesc('Horizontal alignment of the diagram within its container.')
+			.setName(t('setting.alignment.name'))
+			.setDesc(t('setting.alignment.desc'))
 			.addDropdown(dropdown => dropdown
-				.addOption('left', 'Left')
-				.addOption('center', 'Center')
-				.addOption('right', 'Right')
+				.addOption('left', t('setting.alignment.option.left'))
+				.addOption('center', t('setting.alignment.option.center'))
+				.addOption('right', t('setting.alignment.option.right'))
 				.setValue(this.plugin.settings.alignment)
 				.onChange(async (value) => {
 					this.plugin.settings.alignment = value as 'left' | 'center' | 'right';
@@ -124,8 +129,8 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Max container height')
-			.setDesc('Maximum height in pixels for the zoom container. Set to 0 to auto-size so the diagram is fully visible at the current zoom level.')
+			.setName(t('setting.maxHeight.name'))
+			.setDesc(t('setting.maxHeight.desc'))
 			.addText(text => text
 				.setPlaceholder('0')
 				.setValue(this.plugin.settings.maxHeight > 0 ? String(this.plugin.settings.maxHeight) : '')
@@ -136,7 +141,7 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 				}));
 
 		containerEl.createEl('p', {
-			text: 'Changes apply to newly rendered diagrams. Reload the note to see the effect on existing diagrams.',
+			text: t('settings.note'),
 			cls: 'setting-item-description'
 		});
 	}

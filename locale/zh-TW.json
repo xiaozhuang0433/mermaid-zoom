@@ -1,0 +1,15 @@
+{
+  "setting.defaultZoom.name": "預設縮放層級",
+  "setting.defaultZoom.desc": "Mermaid 圖表算繪時的初始縮放百分比。100% 符合容器；調高可讓圖表預設顯示得更大。",
+  "setting.containerBorder.name": "顯示容器邊框",
+  "setting.containerBorder.desc": "在每個圖表容器周圍顯示虛線邊框，便於看清縮放區域的邊界。",
+  "setting.alignment.name": "預設對齊方式",
+  "setting.alignment.desc": "圖表在容器內的水平對齊方式。",
+  "setting.alignment.option.left": "左",
+  "setting.alignment.option.center": "置中",
+  "setting.alignment.option.right": "右",
+  "setting.maxHeight.name": "最大容器高度",
+  "setting.maxHeight.desc": "縮放容器的最大高度（像素）。設為 0 表示自動調整，使圖表在目前縮放層級下完整顯示。",
+  "settings.note": "變更僅對新算繪的圖表生效。重新開啟筆記即可看到對既有圖表的影響。",
+  "wheelZoom.label": "滾輪縮放"
+}

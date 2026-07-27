@@ -6,6 +6,8 @@
     "module": "ESNext",
     "target": "ES6",
     "allowJs": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
     "importHelpers": false,
