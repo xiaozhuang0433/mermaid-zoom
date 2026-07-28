@@ -13,7 +13,9 @@ async function svgToPngBlob(svg: SVGSVGElement, width: number, height: number, s
 	clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 	clone.setAttribute('width', String(width));
 	clone.setAttribute('height', String(height));
-	clone.style.transform = '';
+	// Strip any inline transform so the export is always the unzoomed diagram.
+	// removeProperty (not a style assignment) satisfies no-static-styles-assignment.
+	clone.style.removeProperty('transform');
 
 	const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(clone));
 
