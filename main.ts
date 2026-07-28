@@ -289,7 +289,7 @@ export default class MermaidZoomPlugin extends Plugin {
 
 	private openFullscreenModal(state: ZoomState) {
 		// Create modal overlay
-		const modal = document.createElement('div');
+		const modal = createEl('div');
 		modal.className = 'mermaid-zoom-modal';
 		modal.style.cssText = `
 			position: fixed;
@@ -304,7 +304,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		`;
 
 		// Create header with close button
-		const header = document.createElement('div');
+		const header = createEl('div');
 		header.className = 'mermaid-zoom-modal-header';
 		header.style.cssText = `
 			display: flex;
@@ -315,7 +315,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		`;
 
 		// Close button
-		const closeBtn = document.createElement('button');
+		const closeBtn = createEl('button');
 		closeBtn.className = 'mermaid-zoom-modal-close';
 		closeBtn.textContent = '✕';
 		closeBtn.style.cssText = `
@@ -334,7 +334,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		header.appendChild(closeBtn);
 
 		// Create content area
-		const content = document.createElement('div');
+		const content = createEl('div');
 		content.className = 'mermaid-zoom-modal-content';
 		content.style.cssText = `
 			flex: 1;
@@ -346,7 +346,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		`;
 
 		// Create zoom container inside modal
-		const modalZoomContainer = document.createElement('div');
+		const modalZoomContainer = createEl('div');
 		modalZoomContainer.className = 'mermaid-zoom-modal-zoom-container';
 		modalZoomContainer.style.cssText = `
 			width: 100%;
@@ -356,7 +356,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		`;
 
 		// Create content wrapper for transformations
-		const modalContentWrapper = document.createElement('div');
+		const modalContentWrapper = createEl('div');
 		modalContentWrapper.className = 'mermaid-zoom-modal-wrapper';
 		modalContentWrapper.style.cssText = `
 			transform-origin: 0 0;
@@ -372,7 +372,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		content.appendChild(modalZoomContainer);
 
 		// Create modal controls
-		const controls = document.createElement('div');
+		const controls = createEl('div');
 		controls.className = 'mermaid-zoom-modal-controls';
 		controls.style.cssText = `
 			position: absolute;
@@ -404,17 +404,17 @@ export default class MermaidZoomPlugin extends Plugin {
 		};
 
 		// Add zoom buttons
-		const zoomInBtn = document.createElement('button');
+		const zoomInBtn = createEl('button');
 		zoomInBtn.textContent = '+';
 		this.styleButton(zoomInBtn);
 		zoomInBtn.addEventListener('click', () => zoom(modalContentWrapper, modalState, 1.2));
 
-		const zoomOutBtn = document.createElement('button');
+		const zoomOutBtn = createEl('button');
 		zoomOutBtn.textContent = '-';
 		this.styleButton(zoomOutBtn);
 		zoomOutBtn.addEventListener('click', () => zoom(modalContentWrapper, modalState, 0.8));
 
-		const resetBtn = document.createElement('button');
+		const resetBtn = createEl('button');
 		resetBtn.textContent = '⟲';
 		this.styleButton(resetBtn);
 		resetBtn.addEventListener('click', () => {
@@ -422,7 +422,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		});
 
 		// Export PNG button
-		const exportBtn = document.createElement('button');
+		const exportBtn = createEl('button');
 		exportBtn.textContent = '⤓';
 		exportBtn.title = t('export.buttonTitle');
 		this.styleButton(exportBtn);
@@ -431,7 +431,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		});
 
 		// Scale indicator
-		const scaleIndicator = document.createElement('span');
+		const scaleIndicator = createEl('span');
 		scaleIndicator.style.cssText = `
 			padding: 4px 8px;
 			font-size: 12px;
