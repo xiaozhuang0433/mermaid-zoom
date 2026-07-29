@@ -442,10 +442,33 @@ export default class MermaidZoomPlugin extends Plugin {
 		`;
 		modalState.scaleIndicator = scaleIndicator;
 
+		// Close button in the controls bar — a second, more discoverable close
+		// affordance. The header ✕ (top-right corner) is easy to miss on a
+		// phone, so we also surface close here, next to the zoom controls.
+		const controlsCloseBtn = createEl('button');
+		controlsCloseBtn.textContent = '✕';
+		controlsCloseBtn.title = t('modal.close');
+		controlsCloseBtn.setAttribute('aria-label', t('modal.close'));
+		this.styleButton(controlsCloseBtn);
+		controlsCloseBtn.addClass('mermaid-modal-close-btn');
+
+		// Thin divider separating the zoom controls from the action buttons
+		// (export, close) on the right.
+		const controlsSeparator = createEl('div');
+		controlsSeparator.style.cssText = `
+			width: 1px;
+			align-self: stretch;
+			margin: 2px 4px;
+			background: var(--background-modifier-border);
+		`;
+
 		controls.appendChild(zoomInBtn);
 		controls.appendChild(zoomOutBtn);
 		controls.appendChild(resetBtn);
 		controls.appendChild(scaleIndicator);
+		controls.appendChild(controlsSeparator);
+		controls.appendChild(exportBtn);
+		controls.appendChild(controlsCloseBtn);
 		content.appendChild(controls);
 
 		modal.appendChild(header);
@@ -457,14 +480,34 @@ export default class MermaidZoomPlugin extends Plugin {
 		modalCleanupFns.push(addDragPan(modalZoomContainer, modalContentWrapper, modalState));
 		modalCleanupFns.push(addTouchGestures(modalZoomContainer, modalContentWrapper, modalState));
 
+		// Listen for the hardware Back button (Android) to close the modal. We
+		// push a history entry on open; pressing Back fires popstate, which we
+		// treat as a close. Best-effort: if the platform doesn't route Back to
+		// popstate, the net effect is a no-op (one push on open, one pop on
+		// close), so this never disturbs normal navigation.
+		let closedByPopstate = false;
+		const popstateHandler = () => {
+			closedByPopstate = true;
+			closeModal();
+		};
+
 		// 关闭模态框
 		const closeModal = () => {
+			window.removeEventListener('popstate', popstateHandler);
 			// 清理模态框的所有事件监听器
 			for (const cleanup of modalCleanupFns) {
 				cleanup();
 			}
 			modal.remove();
 			document.removeEventListener('keydown', handleKeydown);
+			// Closing via the button/ESC still owns the pushed history entry —
+			// pop it so Back navigation stays balanced. When closedByPopstate is
+			// true the Back button already consumed the entry. The listener
+			// above is already detached, so the async popstate this triggers is
+			// harmless (it won't re-enter closeModal).
+			if (!closedByPopstate) {
+				history.back();
+			}
 		};
 
 		// 处理 ESC 键
@@ -475,8 +518,13 @@ export default class MermaidZoomPlugin extends Plugin {
 		};
 		document.addEventListener('keydown', handleKeydown);
 
-		// 关闭按钮点击
+		// 监听硬件返回键（安卓）关闭模态框：压入一条历史记录，返回时触发 popstate
+		history.pushState(null, '');
+		window.addEventListener('popstate', popstateHandler);
+
+		// 关闭按钮点击（头部 ✕ 与控制栏 ✕ 共用同一关闭逻辑）
 		closeBtn.addEventListener('click', closeModal);
+		controlsCloseBtn.addEventListener('click', closeModal);
 
 		// 将模态框添加到文档
 		document.body.appendChild(modal);

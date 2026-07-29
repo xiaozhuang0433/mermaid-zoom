@@ -11,5 +11,6 @@
   "setting.maxHeight.name": "Altura máxima del contenedor",
   "setting.maxHeight.desc": "Altura máxima en píxeles del contenedor de zoom. Establecer en 0 para que se ajuste automáticamente y el diagrama sea completamente visible con el nivel de zoom actual.",
   "settings.note": "Los cambios se aplican a los diagramas recién renderizados. Vuelve a cargar la nota para ver el efecto en los diagramas existentes.",
-  "wheelZoom.label": "Zoom con rueda"
+  "wheelZoom.label": "Zoom con rueda",
+  "modal.close": "Cerrar"
 }

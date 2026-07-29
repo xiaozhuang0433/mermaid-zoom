@@ -86,3 +86,10 @@ body.mermaid-zoom-resizing-ew * {
 .mermaid-zoom-btn.mermaid-fullscreen-btn {
 	padding: 6px;
 }
+
+/* Close button in the modal controls bar. Compound selector keeps specificity
+   above .mermaid-zoom-btn:hover so the red tint wins, reading as a
+   destructive/dismiss affordance that stands out from the zoom controls. */
+.mermaid-zoom-btn.mermaid-modal-close-btn:hover {
+	background: var(--background-modifier-error);
+}

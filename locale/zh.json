@@ -19,5 +19,6 @@
   "export.buttonTitle": "导出为 PNG",
   "export.savedNotice": "已保存：{path}",
   "export.downloadedNotice": "已下载：{name}",
-  "export.failedNotice": "导出 PNG 失败"
+  "export.failedNotice": "导出 PNG 失败",
+  "modal.close": "关闭"
 }

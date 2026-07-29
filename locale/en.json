@@ -19,5 +19,6 @@
   "export.buttonTitle": "Export as PNG",
   "export.savedNotice": "Saved: {path}",
   "export.downloadedNotice": "Downloaded: {name}",
-  "export.failedNotice": "Failed to export PNG"
+  "export.failedNotice": "Failed to export PNG",
+  "modal.close": "Close"
 }

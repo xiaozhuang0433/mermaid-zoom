@@ -11,5 +11,6 @@
   "setting.maxHeight.name": "Maximale Container-Höhe",
   "setting.maxHeight.desc": "Maximale Höhe des Zoom-Containers in Pixeln. Auf 0 setzen, um die Größe automatisch so anzupassen, dass das Diagramm bei der aktuellen Zoomstufe vollständig sichtbar ist.",
   "settings.note": "Änderungen gelten nur für neu dargestellte Diagramme. Laden Sie die Notiz neu, um die Auswirkungen auf vorhandene Diagramme zu sehen.",
-  "wheelZoom.label": "Rad-Zoom"
+  "wheelZoom.label": "Rad-Zoom",
+  "modal.close": "Schließen"
 }
