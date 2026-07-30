@@ -115,7 +115,6 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 			.addSlider(slider => slider
 				.setLimits(50, 300, 5)
 				.setValue(this.plugin.settings.defaultZoom)
-				.setDynamicTooltip()
 				.onChange(async (value) => {
 					this.plugin.settings.defaultZoom = value;
 					await this.plugin.saveSettings();

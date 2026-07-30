@@ -15,7 +15,7 @@ export default class MermaidZoomPlugin extends Plugin {
 	settings: MermaidZoomSettings = DEFAULT_SETTINGS;
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<MermaidZoomSettings>);
 	}
 
 	async saveSettings() {
@@ -81,7 +81,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		this.mutationObserver = new MutationObserver((mutations) => {
 			for (const mutation of Array.from(mutations)) {
 				for (const node of Array.from(mutation.addedNodes)) {
-					if (node instanceof HTMLElement || node instanceof SVGElement) {
+					if (node.instanceOf(HTMLElement) || node.instanceOf(SVGElement)) {
 						this.processPotentialMermaidElement(node);
 					}
 				}
@@ -100,7 +100,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		// Obsidian structure: <div class="mermaid"><svg id="mermaid-xxx">...</svg></div>
 		const mermaidSvgs: SVGSVGElement[] = [];
 
-		if (element instanceof HTMLElement) {
+		if (element.instanceOf(HTMLElement)) {
 			// Find SVGs inside .mermaid containers or SVGs with mermaid id
 			const svgs = Array.from(element.querySelectorAll('.mermaid svg, svg[id^="mermaid-"]'));
 			mermaidSvgs.push(...svgs as SVGSVGElement[]);
@@ -289,7 +289,7 @@ export default class MermaidZoomPlugin extends Plugin {
 
 	private openFullscreenModal(state: ZoomState) {
 		// Create modal overlay
-		const modal = createEl('div');
+		const modal = createDiv();
 		modal.className = 'mermaid-zoom-modal';
 		modal.style.cssText = `
 			position: fixed;
@@ -304,7 +304,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		`;
 
 		// Create header with close button
-		const header = createEl('div');
+		const header = createDiv();
 		header.className = 'mermaid-zoom-modal-header';
 		header.style.cssText = `
 			display: flex;
@@ -334,7 +334,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		header.appendChild(closeBtn);
 
 		// Create content area
-		const content = createEl('div');
+		const content = createDiv();
 		content.className = 'mermaid-zoom-modal-content';
 		content.style.cssText = `
 			flex: 1;
@@ -346,7 +346,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		`;
 
 		// Create zoom container inside modal
-		const modalZoomContainer = createEl('div');
+		const modalZoomContainer = createDiv();
 		modalZoomContainer.className = 'mermaid-zoom-modal-zoom-container';
 		modalZoomContainer.style.cssText = `
 			width: 100%;
@@ -356,7 +356,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		`;
 
 		// Create content wrapper for transformations
-		const modalContentWrapper = createEl('div');
+		const modalContentWrapper = createDiv();
 		modalContentWrapper.className = 'mermaid-zoom-modal-wrapper';
 		modalContentWrapper.style.cssText = `
 			transform-origin: 0 0;
@@ -372,7 +372,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		content.appendChild(modalZoomContainer);
 
 		// Create modal controls
-		const controls = createEl('div');
+		const controls = createDiv();
 		controls.className = 'mermaid-zoom-modal-controls';
 		controls.style.cssText = `
 			position: absolute;
@@ -431,7 +431,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		});
 
 		// Scale indicator
-		const scaleIndicator = createEl('span');
+		const scaleIndicator = createSpan();
 		scaleIndicator.style.cssText = `
 			padding: 4px 8px;
 			font-size: 12px;
@@ -454,7 +454,7 @@ export default class MermaidZoomPlugin extends Plugin {
 
 		// Thin divider separating the zoom controls from the action buttons
 		// (export, close) on the right.
-		const controlsSeparator = createEl('div');
+		const controlsSeparator = createDiv();
 		controlsSeparator.style.cssText = `
 			width: 1px;
 			align-self: stretch;
@@ -594,7 +594,7 @@ export default class MermaidZoomPlugin extends Plugin {
 			padding: 0 8px 0 4px;
 		`;
 
-		const lockLabel = lockToggle.createEl('span', {
+		const lockLabel = lockToggle.createSpan({
 			text: t('lock.label'),
 			cls: 'mermaid-lock-label'
 		});
@@ -666,7 +666,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		});
 
 		// Scale indicator
-		const scaleIndicator = controls.createEl('span', {
+		const scaleIndicator = controls.createSpan({
 			cls: 'mermaid-zoom-scale'
 		});
 		scaleIndicator.style.cssText = `

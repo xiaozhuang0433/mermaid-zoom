@@ -4,7 +4,8 @@
   "description": "Add zoom functionality to Mermaid diagrams in Obsidian",
   "scripts": {
     "dev": "node esbuild.config.mjs",
-    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production"
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "lint": "eslint ."
   },
   "keywords": [
     "obsidian",
@@ -14,7 +15,10 @@
   ],
   "devDependencies": {
     "@types/node": "^20.10.0",
+    "@typescript-eslint/parser": "^8.65.0",
     "esbuild": "^0.19.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-obsidianmd": "^0.4.1",
     "obsidian": "^1.13.1",
     "typescript": "^5.3.0"
   }
