@@ -13,10 +13,11 @@ export interface ZoomState {
 	// Original SVG dimensions (saved once)
 	svgOriginalWidth: number;
 	svgOriginalHeight: number;
-	// Whether wheel-zoom is enabled for this diagram (inline view only;
-	// the modal always sets this to true). Default false so the wheel
-	// scrolls the page unless the user opts in via the toggle button.
-	wheelZoomEnabled: boolean;
+	// Whether this diagram is locked (inline view only; the modal always
+	// sets this to false). Default true: when locked, wheel zoom, drag-pan
+	// and touch gestures are all disabled so the page scrolls/touches
+	// normally through the diagram. Unlock via the lock button to interact.
+	locked: boolean;
 }
 
 export function updateTransform(contentWrapper: HTMLElement, state: ZoomState) {
@@ -50,9 +51,9 @@ export function zoom(contentWrapper: HTMLElement, state: ZoomState, factor: numb
 
 export function addWheelZoom(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState): () => void {
 	const wheelHandler = (e: WheelEvent) => {
-		// Wheel zoom is opt-in (inline view defaults to off). Returning here
-		// before preventDefault() lets the page scroll normally when disabled.
-		if (!state.wheelZoomEnabled) return;
+		// Locked diagrams don't zoom on wheel. Returning here before
+		// preventDefault() lets the page scroll normally when locked.
+		if (state.locked) return;
 
 		e.preventDefault();
 
@@ -85,6 +86,7 @@ export function addDragPan(container: HTMLElement, contentWrapper: HTMLElement, 
 	contentWrapper.classList.add('mermaid-zoom-content');
 
 	container.addEventListener('mousedown', (e) => {
+		if (state.locked) return; // Locked diagrams can't be drag-panned.
 		if (e.button === 0) { // 左键按下
 			state.isDragging = true;
 			state.startX = e.clientX - state.translateX;
@@ -124,6 +126,7 @@ export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLEle
 	let initialScale = 1;
 
 	const onTouchStart = (e: TouchEvent) => {
+		if (state.locked) return; // Locked diagrams ignore touch gestures.
 		if (e.touches.length === 2) {
 			// 双指缩放
 			const touch1 = e.touches[0];
@@ -142,6 +145,10 @@ export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLEle
 	};
 
 	const onTouchMove = (e: TouchEvent) => {
+		// Locked diagrams don't handle touch; skip before preventDefault() so
+		// the page scrolls/zooms normally under the touch.
+		if (state.locked) return;
+
 		e.preventDefault();
 
 		if (e.touches.length === 2) {

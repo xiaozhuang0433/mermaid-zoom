@@ -35,6 +35,13 @@
 	cursor: grabbing;
 }
 
+/* Locked diagrams aren't draggable — drop the misleading grab cursor.
+   Compound selector beats .mermaid-zoom-content so this wins while keeping
+   the base class's SVG styling (non-scaling-stroke, dark-mode invert). */
+.mermaid-zoom-content.locked {
+	cursor: default;
+}
+
 /* Resizing cursor states. Applied to body AND all descendants so the cursor
    stays locked during a resize drag, overriding per-element cursors (e.g. the
    grab cursor on .mermaid-zoom-content) via higher specificity. */

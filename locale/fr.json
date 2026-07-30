@@ -11,6 +11,6 @@
   "setting.maxHeight.name": "Hauteur maximale du conteneur",
   "setting.maxHeight.desc": "Hauteur maximale en pixels du conteneur de zoom. Définir sur 0 pour ajuster automatiquement afin que le diagramme soit entièrement visible au niveau de zoom actuel.",
   "settings.note": "Les modifications s'appliquent aux diagrammes nouvellement rendus. Rechargez la note pour voir l'effet sur les diagrammes existants.",
-  "wheelZoom.label": "Zoom à la molette",
-  "modal.close": "Fermer"
+  "modal.close": "Fermer",
+  "lock.label": "Verrouiller"
 }

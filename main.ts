@@ -220,7 +220,7 @@ export default class MermaidZoomPlugin extends Plugin {
 			container: container,
 			svgOriginalWidth: svgOriginalWidth,
 			svgOriginalHeight: svgOriginalHeight,
-			wheelZoomEnabled: false
+			locked: true
 		};
 		this.zoomStates.set(contentWrapper, state);
 
@@ -400,7 +400,7 @@ export default class MermaidZoomPlugin extends Plugin {
 			container: modalZoomContainer,
 			svgOriginalWidth: state.svgOriginalWidth,
 			svgOriginalHeight: state.svgOriginalHeight,
-			wheelZoomEnabled: true
+			locked: false
 		};
 
 		// Add zoom buttons
@@ -582,39 +582,43 @@ export default class MermaidZoomPlugin extends Plugin {
 			box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 		`;
 
-		// Wheel-zoom switch (off by default). Toggling it flips
-		// state.wheelZoomEnabled, which the wheel handler in addWheelZoom is
-		// gated on — so when off the wheel scrolls the page normally.
-		const wheelZoomToggle = controls.createDiv('mermaid-wheel-zoom-toggle');
-		wheelZoomToggle.style.cssText = `
+		// Lock switch (on by default). Toggling it flips state.locked, which
+		// gates wheel/drag/touch in gestures.ts — when on (locked) the diagram
+		// is non-interactive and the page scrolls/touches through it; turn it
+		// off to enable zoom/pan/pinch. The +/-/reset buttons below always work.
+		const lockToggle = controls.createDiv('mermaid-lock-toggle');
+		lockToggle.style.cssText = `
 			display: flex;
 			align-items: center;
 			gap: 6px;
 			padding: 0 8px 0 4px;
 		`;
 
-		const wheelZoomLabel = wheelZoomToggle.createEl('span', {
-			text: t('wheelZoom.label'),
-			cls: 'mermaid-wheel-zoom-label'
+		const lockLabel = lockToggle.createEl('span', {
+			text: t('lock.label'),
+			cls: 'mermaid-lock-label'
 		});
-		wheelZoomLabel.style.cssText = `
+		lockLabel.style.cssText = `
 			font-size: 12px;
 			font-family: var(--font-ui-medium);
 			color: var(--text-muted);
 			white-space: nowrap;
 		`;
 
-		new ToggleComponent(wheelZoomToggle)
-			.setValue(state.wheelZoomEnabled)
+		new ToggleComponent(lockToggle)
+			.setValue(state.locked)
 			.onChange((value) => {
-				state.wheelZoomEnabled = value;
+				state.locked = value;
+				contentWrapper.classList.toggle('locked', state.locked);
 			});
+		// Match the cursor class to the default locked state on first render.
+		contentWrapper.classList.toggle('locked', state.locked);
 
 		// Stop pointer/click events on the switch from bubbling into the
 		// container, where they would otherwise start a drag-pan.
 		const stopSwitchEvent = (e: Event) => e.stopPropagation();
-		wheelZoomToggle.addEventListener('mousedown', stopSwitchEvent);
-		wheelZoomToggle.addEventListener('click', stopSwitchEvent);
+		lockToggle.addEventListener('mousedown', stopSwitchEvent);
+		lockToggle.addEventListener('click', stopSwitchEvent);
 
 		// Zoom in button
 		const zoomInBtn = controls.createEl('button', {

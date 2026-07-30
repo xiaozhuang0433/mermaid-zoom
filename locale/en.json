@@ -11,7 +11,6 @@
   "setting.maxHeight.name": "Max container height",
   "setting.maxHeight.desc": "Maximum height in pixels for the zoom container. Set to 0 to auto-size so the diagram is fully visible at the current zoom level.",
   "settings.note": "Changes apply to newly rendered diagrams. Reload the note to see the effect on existing diagrams.",
-  "wheelZoom.label": "Wheel zoom",
   "setting.exportDestination.name": "PNG export destination",
   "setting.exportDestination.desc": "Where exported PNG images of diagrams are saved.",
   "setting.exportDestination.option.vault": "Vault (attachments folder)",
@@ -20,5 +19,6 @@
   "export.savedNotice": "Saved: {path}",
   "export.downloadedNotice": "Downloaded: {name}",
   "export.failedNotice": "Failed to export PNG",
-  "modal.close": "Close"
+  "modal.close": "Close",
+  "lock.label": "Lock"
 }
