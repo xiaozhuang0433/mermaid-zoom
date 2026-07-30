@@ -1,5 +1,4 @@
-# Lock files
-package-lock.json
+# Lock files for other package managers (this repo uses npm; package-lock.json IS tracked)
 yarn.lock
 pnpm-lock.yaml
 

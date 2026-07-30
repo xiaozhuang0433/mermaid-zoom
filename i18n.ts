@@ -1,3 +1,5 @@
+import { getLanguage } from 'obsidian';
+
 import en from './locale/en.json';
 import zh from './locale/zh.json';
 import zhTw from './locale/zh-TW.json';
@@ -9,9 +11,10 @@ import ru from './locale/ru.json';
 import ptBr from './locale/pt-BR.json';
 import ko from './locale/ko.json';
 
-// Obsidian stores the user's interface language in localStorage under
-// "language" (e.g. "en", "zh", "zh-TW", "ja", "ru"). Map it to a translation
-// map, falling back to English for any language or key we don't ship.
+// Resolve the user's interface language via Obsidian's getLanguage() (returns
+// an ISO code such as "en", "zh", "zh-TW", "ja", "ru"; defaults to "en") and
+// map it to a translation dict, falling back to English for any language or
+// key we don't ship.
 //
 // Non-English translations are initial AI drafts — native-speaker refinements
 // welcome (add a locale/xx.json and register it below).
@@ -36,7 +39,7 @@ function resolveDict(lang: string): Record<string, string> {
 	return translations[base] ?? translations.en;
 }
 
-const dict = resolveDict(window.localStorage.getItem('language') ?? 'en');
+const dict = resolveDict(getLanguage());
 
 /** Translate a key, falling back to English, then to the key itself. */
 export function t(key: string): string {
