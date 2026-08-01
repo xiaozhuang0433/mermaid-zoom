@@ -574,6 +574,7 @@ export default class MermaidZoomPlugin extends Plugin {
 			bottom: 10px;
 			right: 10px;
 			display: flex;
+			flex-direction: column;
 			gap: 5px;
 			z-index: 100;
 			background: var(--background-secondary);
@@ -582,11 +583,30 @@ export default class MermaidZoomPlugin extends Plugin {
 			box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 		`;
 
+		// Split the controls across two rows so they fit on narrow (phone)
+		// screens. Top row = status (lock toggle + scale %); bottom row =
+		// actions (+/-/reset/export/fullscreen). A single row overflowed on
+		// small displays.
+		const topRow = controls.createDiv();
+		topRow.style.cssText = `
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 8px;
+		`;
+
+		const bottomRow = controls.createDiv();
+		bottomRow.style.cssText = `
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		`;
+
 		// Lock switch (on by default). Toggling it flips state.locked, which
 		// gates wheel/drag/touch in gestures.ts — when on (locked) the diagram
 		// is non-interactive and the page scrolls/touches through it; turn it
 		// off to enable zoom/pan/pinch. The +/-/reset buttons below always work.
-		const lockToggle = controls.createDiv('mermaid-lock-toggle');
+		const lockToggle = topRow.createDiv('mermaid-lock-toggle');
 		lockToggle.style.cssText = `
 			display: flex;
 			align-items: center;
@@ -621,7 +641,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		lockToggle.addEventListener('click', stopSwitchEvent);
 
 		// Zoom in button
-		const zoomInBtn = controls.createEl('button', {
+		const zoomInBtn = bottomRow.createEl('button', {
 			text: '+',
 			cls: 'mermaid-zoom-btn'
 		});
@@ -632,7 +652,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		});
 
 		// Zoom out button
-		const zoomOutBtn = controls.createEl('button', {
+		const zoomOutBtn = bottomRow.createEl('button', {
 			text: '-',
 			cls: 'mermaid-zoom-btn'
 		});
@@ -643,7 +663,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		});
 
 		// Reset button
-		const resetBtn = controls.createEl('button', {
+		const resetBtn = bottomRow.createEl('button', {
 			text: '⟲',
 			cls: 'mermaid-zoom-btn'
 		});
@@ -654,7 +674,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		});
 
 		// Export PNG button
-		const exportBtn = controls.createEl('button', {
+		const exportBtn = bottomRow.createEl('button', {
 			text: '⤓',
 			cls: 'mermaid-zoom-btn'
 		});
@@ -666,7 +686,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		});
 
 		// Scale indicator
-		const scaleIndicator = controls.createSpan({
+		const scaleIndicator = topRow.createSpan({
 			cls: 'mermaid-zoom-scale'
 		});
 		scaleIndicator.style.cssText = `
@@ -681,7 +701,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		updateTransform(contentWrapper, state);
 
 		// Fullscreen toggle button
-		const fullscreenBtn = controls.createEl('button', {
+		const fullscreenBtn = bottomRow.createEl('button', {
 			cls: 'mermaid-zoom-btn mermaid-fullscreen-btn'
 		});
 
