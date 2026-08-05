@@ -35,6 +35,6 @@ There are no tests.
 
 > **Never cut a release on your own initiative.** Do not bump the version, push a tag, run `gh release`, or trigger `workflow_dispatch` unless the user explicitly asks. Publishing a public GitHub release is hard to undo — always wait for an explicit instruction (e.g. "发版" / "release X"). Preparing commits, version bumps, or release prep is fine, but the actual publish step requires confirmation.
 
-GitHub Action (`.github/workflows/release.yml`) builds and releases automatically on push to `main` (paths-ignore: README, LICENSE, manifest.json, package.json). Supports `workflow_dispatch` for manual triggers.
-BRAT-compatible: release includes `main.js`, `manifest.json`, `styles.css`.
-Version is auto-bumped (patch +1) if the tag already exists. Bump commits use `[skip ci]` to prevent workflow loops.
+GitHub Action (`.github/workflows/release.yml`) triggers on **tag push** (`on: push: tags`) and on `workflow_dispatch` (optional `version` input). It does NOT fire on pushes to `main`.
+Release flow: bump `manifest.json` + `package.json` → commit → `git tag X.Y.Z` (must equal the manifest version) → `git push origin X.Y.Z`. The workflow runs lint + build, creates the tag if missing, and publishes the release.
+BRAT-compatible: release assets are `main.js`, `manifest.json`, `styles.css`, and `mermaid-zoom.zip`.
