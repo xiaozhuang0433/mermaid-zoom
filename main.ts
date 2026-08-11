@@ -1,4 +1,4 @@
-import { Plugin, ToggleComponent } from 'obsidian';
+import { Platform, Plugin, ToggleComponent } from 'obsidian';
 import { MermaidZoomSettings, DEFAULT_SETTINGS, MermaidZoomSettingTab } from './settings';
 import { ZoomState, updateTransform, zoom, addWheelZoom, addDragPan, addTouchGestures, addResizeHandles } from './gestures';
 import { t } from './i18n';
@@ -480,37 +480,35 @@ export default class MermaidZoomPlugin extends Plugin {
 		modalCleanupFns.push(addDragPan(modalZoomContainer, modalContentWrapper, modalState));
 		modalCleanupFns.push(addTouchGestures(modalZoomContainer, modalContentWrapper, modalState));
 
-		// Listen for the hardware Back button (Android) to close the modal. We
-		// push a history entry on open; pressing Back fires popstate, which we
-		// treat as a close. Best-effort: if the platform doesn't route Back to
-		// popstate, the net effect is a no-op (one push on open, one pop on
-		// close), so this never disturbs normal navigation.
-		let closedByPopstate = false;
-		const popstateHandler = () => {
-			closedByPopstate = true;
-			closeModal();
-		};
+		// Hardware Back button (Android) closes the modal. The only way to
+		// intercept it is to push a history entry and treat the resulting
+		// popstate as a close.
+		//
+		// CRITICAL: this history dance is MOBILE-ONLY, and we NEVER call
+		// history.back() ourselves.
+		// - Obsidian wires its back/forward navigation (desktop title-bar
+		//   arrows, and the mobile hardware Back button) to the History API.
+		//   A programmatic history.back() is therefore read as "go back in the
+		//   active leaf", which navigates away from / closes the currently
+		//   open file. That was the bug: clicking ✕ called history.back() to
+		//   "balance" the pushed entry, and the note vanished with the modal.
+		// - So the pushed entry is consumed only by the hardware Back button
+		//   itself, via the popstate handler below. Closing via ✕/ESC leaves
+		//   the entry, which is harmless: popping it returns to the current
+		//   note's own history entry, so no leaf navigation occurs.
+		// - Desktop has no hardware Back button, so we skip the whole thing
+		//   there and rely on ✕/ESC.
+		const popstateHandler = () => closeModal();
 
-		// 关闭模态框
 		const closeModal = () => {
 			window.removeEventListener('popstate', popstateHandler);
-			// 清理模态框的所有事件监听器
 			for (const cleanup of modalCleanupFns) {
 				cleanup();
 			}
 			modal.remove();
 			document.removeEventListener('keydown', handleKeydown);
-			// Closing via the button/ESC still owns the pushed history entry —
-			// pop it so Back navigation stays balanced. When closedByPopstate is
-			// true the Back button already consumed the entry. The listener
-			// above is already detached, so the async popstate this triggers is
-			// harmless (it won't re-enter closeModal).
-			if (!closedByPopstate) {
-				history.back();
-			}
 		};
 
-		// 处理 ESC 键
 		const handleKeydown = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') {
 				closeModal();
@@ -518,18 +516,20 @@ export default class MermaidZoomPlugin extends Plugin {
 		};
 		document.addEventListener('keydown', handleKeydown);
 
-		// 监听硬件返回键（安卓）关闭模态框：压入一条历史记录，返回时触发 popstate
-		history.pushState(null, '');
-		window.addEventListener('popstate', popstateHandler);
+		// Only intercept the hardware Back button on mobile.
+		if (Platform.isMobile) {
+			history.pushState(null, '');
+			window.addEventListener('popstate', popstateHandler);
+		}
 
-		// 关闭按钮点击（头部 ✕ 与控制栏 ✕ 共用同一关闭逻辑）
+		// Close buttons (header ✕ and controls-bar ✕ share the same logic).
 		closeBtn.addEventListener('click', closeModal);
 		controlsCloseBtn.addEventListener('click', closeModal);
 
-		// 将模态框添加到文档
+		// Add the modal to the document.
 		document.body.appendChild(modal);
 
-		// 模态框可见后适配容器
+		// Fit the container once the modal is visible.
 		window.requestAnimationFrame(() => {
 			this.fitToContainerModal(modalZoomContainer, modalContentWrapper, modalState);
 		});
