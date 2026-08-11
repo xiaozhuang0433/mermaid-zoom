@@ -124,6 +124,10 @@ export function addDragPan(container: HTMLElement, contentWrapper: HTMLElement, 
 export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState): () => void {
 	let initialDistance = 0;
 	let initialScale = 1;
+	let initialTranslateX = 0;
+	let initialTranslateY = 0;
+	let initialCenterX = 0;
+	let initialCenterY = 0;
 
 	const onTouchStart = (e: TouchEvent) => {
 		if (state.locked) return; // Locked diagrams ignore touch gestures.
@@ -136,6 +140,13 @@ export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLEle
 				touch2.clientY - touch1.clientY
 			);
 			initialScale = state.scale;
+			initialTranslateX = state.translateX;
+			initialTranslateY = state.translateY;
+
+			const rect = container.getBoundingClientRect();
+			initialCenterX = (touch1.clientX + touch2.clientX) / 2 - rect.left;
+			initialCenterY = (touch1.clientY + touch2.clientY) / 2 - rect.top;
+			state.isDragging = false;
 		} else if (e.touches.length === 1) {
 			// 单指拖拽
 			state.isDragging = true;
@@ -152,6 +163,8 @@ export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLEle
 		e.preventDefault();
 
 		if (e.touches.length === 2) {
+			if (initialDistance === 0) return;
+
 			// 双指缩放
 			const touch1 = e.touches[0];
 			const touch2 = e.touches[1];
@@ -164,6 +177,13 @@ export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLEle
 			let newScale = initialScale * scaleRatio;
 			newScale = Math.max(state.minScale, Math.min(state.maxScale, newScale));
 
+			const rect = container.getBoundingClientRect();
+			const currentCenterX = (touch1.clientX + touch2.clientX) / 2 - rect.left;
+			const currentCenterY = (touch1.clientY + touch2.clientY) / 2 - rect.top;
+			const appliedScaleRatio = newScale / initialScale;
+
+			state.translateX = currentCenterX - (initialCenterX - initialTranslateX) * appliedScaleRatio;
+			state.translateY = currentCenterY - (initialCenterY - initialTranslateY) * appliedScaleRatio;
 			state.scale = newScale;
 			updateTransform(contentWrapper, state);
 		} else if (e.touches.length === 1 && state.isDragging) {
@@ -181,11 +201,13 @@ export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLEle
 	container.addEventListener('touchstart', onTouchStart);
 	container.addEventListener('touchmove', onTouchMove, { passive: false });
 	container.addEventListener('touchend', onTouchEnd);
+	container.addEventListener('touchcancel', onTouchEnd);
 
 	return () => {
 		container.removeEventListener('touchstart', onTouchStart);
 		container.removeEventListener('touchmove', onTouchMove);
 		container.removeEventListener('touchend', onTouchEnd);
+		container.removeEventListener('touchcancel', onTouchEnd);
 	};
 }
 
