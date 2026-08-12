@@ -488,17 +488,13 @@ export default class MermaidZoomPlugin extends Plugin {
 			right: 10px;
 			display: flex;
 			z-index: 100;
-			background: var(--background-secondary);
-			padding: 5px;
-			border-radius: 5px;
-			box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 		`;
 
 		// Match the cursor class to the default locked state on first render.
 		contentWrapper.classList.toggle('locked', state.locked);
 
 		const fullscreenBtn = controls.createEl('button', {
-			cls: 'mermaid-zoom-btn mermaid-fullscreen-btn'
+			cls: 'mermaid-zoom-fullscreen-btn'
 		});
 
 		// Create SVG icon
@@ -530,7 +526,6 @@ export default class MermaidZoomPlugin extends Plugin {
 		svg.appendChild(polyline4);
 
 		fullscreenBtn.appendChild(svg);
-		this.styleButton(fullscreenBtn);
 		fullscreenBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
 			this.openFullscreenModal(state);

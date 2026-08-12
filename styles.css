@@ -61,6 +61,24 @@
 	background: var(--interactive-hover);
 }
 
-.mermaid-zoom-btn.mermaid-fullscreen-btn {
+.mermaid-zoom-fullscreen-btn {
+	width: 36px;
+	height: 36px;
 	padding: 6px;
+	border: none;
+	border-radius: 8px;
+	background: transparent;
+	color: var(--text-muted);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0.72;
+}
+
+.mermaid-zoom-fullscreen-btn:hover,
+.mermaid-zoom-fullscreen-btn:active {
+	background: rgba(0, 0, 0, 0.06);
+	color: var(--text-normal);
+	opacity: 1;
 }
