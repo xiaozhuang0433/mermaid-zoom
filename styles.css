@@ -52,11 +52,11 @@
 }
 
 .mermaid-zoom-icon-btn {
-	width: 36px;
-	height: 36px;
-	padding: 6px;
+	width: 26px;
+	height: 26px;
+	padding: 4px;
 	border: none;
-	border-radius: 8px;
+	border-radius: 6px;
 	background: transparent;
 	color: var(--text-muted);
 	cursor: pointer;

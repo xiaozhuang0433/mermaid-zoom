@@ -286,8 +286,8 @@ export default class MermaidZoomPlugin extends Plugin {
 	}
 
 	private openFullscreenModal(state: ZoomState) {
-		const closeButtonTop = Platform.isMobile ? '44px' : '10px';
 		const closeButtonRight = Platform.isMobile ? '20px' : '15px';
+		const closeButtonBottom = Platform.isMobile ? '28px' : '15px';
 
 		// Create modal overlay
 		const modal = createDiv();
@@ -307,7 +307,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		header.className = 'mermaid-zoom-modal-header';
 		header.style.cssText = `
 			position: absolute;
-			top: ${closeButtonTop};
+			bottom: ${closeButtonBottom};
 			right: ${closeButtonRight};
 			z-index: 1;
 		`;
@@ -474,7 +474,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		const controls = container.createDiv('mermaid-zoom-controls');
 		controls.style.cssText = `
 			position: absolute;
-			top: 10px;
+			bottom: 8px;
 			right: 10px;
 			display: flex;
 			z-index: 100;
@@ -490,8 +490,8 @@ export default class MermaidZoomPlugin extends Plugin {
 		// Create SVG icon
 		const svgNS = 'http://www.w3.org/2000/svg';
 		const svg = document.createElementNS(svgNS, 'svg');
-		svg.setAttribute('width', '24');
-		svg.setAttribute('height', '24');
+		svg.setAttribute('width', '18');
+		svg.setAttribute('height', '18');
 		svg.setAttribute('viewBox', '0 0 16 16');
 		svg.setAttribute('fill', 'none');
 		svg.setAttribute('stroke', 'currentColor');
