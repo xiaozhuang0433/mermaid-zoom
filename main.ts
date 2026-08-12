@@ -222,11 +222,8 @@ export default class MermaidZoomPlugin extends Plugin {
 		};
 		this.zoomStates.set(contentWrapper, state);
 
-		// 注册控件和交互，插件卸载时自动清理
+		// Inline diagrams are static; the fullscreen modal owns zoom and pan.
 		this.register(this.createControls(container, contentWrapper, state));
-		this.register(addWheelZoom(container, contentWrapper, state));
-		this.register(addDragPan(container, contentWrapper, state));
-		this.register(addTouchGestures(container, contentWrapper, state));
 
 		// Fit SVG to container initially
 		this.fitToContainer(container, contentWrapper, svg, state);

@@ -26,20 +26,16 @@
 	filter: invert(1) hue-rotate(180deg);
 }
 
-/* Container cursor states */
 .mermaid-zoom-content {
+	cursor: default;
+}
+
+.mermaid-zoom-modal-wrapper {
 	cursor: grab;
 }
 
-.mermaid-zoom-content.dragging {
+.mermaid-zoom-modal-wrapper.dragging {
 	cursor: grabbing;
-}
-
-/* Locked diagrams aren't draggable — drop the misleading grab cursor.
-   Compound selector beats .mermaid-zoom-content so this wins while keeping
-   the base class's SVG styling (non-scaling-stroke, dark-mode invert). */
-.mermaid-zoom-content.locked {
-	cursor: default;
 }
 
 /* Zoom buttons — same reason: background declared here, not as an inline style. */
