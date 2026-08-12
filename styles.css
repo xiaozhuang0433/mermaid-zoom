@@ -42,33 +42,6 @@
 	cursor: default;
 }
 
-/* Resizing cursor states. Applied to body AND all descendants so the cursor
-   stays locked during a resize drag, overriding per-element cursors (e.g. the
-   grab cursor on .mermaid-zoom-content) via higher specificity. */
-body.mermaid-zoom-resizing-nwse,
-body.mermaid-zoom-resizing-nwse * {
-	cursor: nwse-resize;
-	user-select: none;
-}
-
-body.mermaid-zoom-resizing-nesw,
-body.mermaid-zoom-resizing-nesw * {
-	cursor: nesw-resize;
-	user-select: none;
-}
-
-body.mermaid-zoom-resizing-ns,
-body.mermaid-zoom-resizing-ns * {
-	cursor: ns-resize;
-	user-select: none;
-}
-
-body.mermaid-zoom-resizing-ew,
-body.mermaid-zoom-resizing-ew * {
-	cursor: ew-resize;
-	user-select: none;
-}
-
 /* Modal close button. Background lives in CSS (not inline) so :hover can
    override it through the normal cascade. */
 .mermaid-zoom-modal-close {
@@ -88,15 +61,6 @@ body.mermaid-zoom-resizing-ew * {
 	background: var(--interactive-hover);
 }
 
-/* Fullscreen button padding (compound selector raises specificity above
-   Obsidian's generic button reset). */
 .mermaid-zoom-btn.mermaid-fullscreen-btn {
 	padding: 6px;
-}
-
-/* Close button in the modal controls bar. Compound selector keeps specificity
-   above .mermaid-zoom-btn:hover so the red tint wins, reading as a
-   destructive/dismiss affordance that stands out from the zoom controls. */
-.mermaid-zoom-btn.mermaid-modal-close-btn:hover {
-	background: var(--background-modifier-error);
 }
