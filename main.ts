@@ -286,8 +286,8 @@ export default class MermaidZoomPlugin extends Plugin {
 	}
 
 	private openFullscreenModal(state: ZoomState) {
-		const mobileHeaderTopPadding = Platform.isMobile ? '44px' : '10px';
-		const mobileHeaderRightPadding = Platform.isMobile ? '20px' : '15px';
+		const closeButtonTop = Platform.isMobile ? '44px' : '10px';
+		const closeButtonRight = Platform.isMobile ? '20px' : '15px';
 
 		// Create modal overlay
 		const modal = createDiv();
@@ -299,10 +299,6 @@ export default class MermaidZoomPlugin extends Plugin {
 			z-index: 9999;
 			display: flex;
 			flex-direction: column;
-			padding-top: env(safe-area-inset-top, 0px);
-			padding-right: env(safe-area-inset-right, 0px);
-			padding-bottom: env(safe-area-inset-bottom, 0px);
-			padding-left: env(safe-area-inset-left, 0px);
 			box-sizing: border-box;
 		`;
 
@@ -310,12 +306,10 @@ export default class MermaidZoomPlugin extends Plugin {
 		const header = createDiv();
 		header.className = 'mermaid-zoom-modal-header';
 		header.style.cssText = `
-			display: flex;
-			justify-content: flex-end;
-			padding: ${mobileHeaderTopPadding} ${mobileHeaderRightPadding} 10px 15px;
-			background: var(--background-secondary);
-			border-bottom: 1px solid var(--background-modifier-border);
-			flex: 0 0 auto;
+			position: absolute;
+			top: ${closeButtonTop};
+			right: ${closeButtonRight};
+			z-index: 1;
 		`;
 
 		// Close button
