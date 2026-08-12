@@ -42,16 +42,6 @@
 	cursor: default;
 }
 
-/* Modal close button. Background lives in CSS (not inline) so :hover can
-   override it through the normal cascade. */
-.mermaid-zoom-modal-close {
-	background: var(--interactive-normal);
-}
-
-.mermaid-zoom-modal-close:hover {
-	background: var(--interactive-hover);
-}
-
 /* Zoom buttons — same reason: background declared here, not as an inline style. */
 .mermaid-zoom-btn {
 	background: var(--interactive-normal);
@@ -61,7 +51,7 @@
 	background: var(--interactive-hover);
 }
 
-.mermaid-zoom-fullscreen-btn {
+.mermaid-zoom-icon-btn {
 	width: 36px;
 	height: 36px;
 	padding: 6px;
@@ -76,8 +66,8 @@
 	opacity: 0.72;
 }
 
-.mermaid-zoom-fullscreen-btn:hover,
-.mermaid-zoom-fullscreen-btn:active {
+.mermaid-zoom-icon-btn:hover,
+.mermaid-zoom-icon-btn:active {
 	background: rgba(0, 0, 0, 0.06);
 	color: var(--text-normal);
 	opacity: 1;

@@ -314,20 +314,10 @@ export default class MermaidZoomPlugin extends Plugin {
 
 		// Close button
 		const closeBtn = createEl('button');
-		closeBtn.className = 'mermaid-zoom-modal-close';
+		closeBtn.className = 'mermaid-zoom-icon-btn mermaid-zoom-modal-close';
 		closeBtn.textContent = '✕';
 		closeBtn.style.cssText = `
-			width: 32px;
-			height: 32px;
-			border: none;
-			color: var(--text-normal);
-			border-radius: 4px;
-			cursor: pointer;
 			font-size: 18px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			transition: background 0.2s;
 		`;
 		header.appendChild(closeBtn);
 
@@ -494,7 +484,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		contentWrapper.classList.toggle('locked', state.locked);
 
 		const fullscreenBtn = controls.createEl('button', {
-			cls: 'mermaid-zoom-fullscreen-btn'
+			cls: 'mermaid-zoom-icon-btn mermaid-zoom-fullscreen-btn'
 		});
 
 		// Create SVG icon
