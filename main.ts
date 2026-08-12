@@ -286,6 +286,9 @@ export default class MermaidZoomPlugin extends Plugin {
 	}
 
 	private openFullscreenModal(state: ZoomState) {
+		const mobileHeaderTopPadding = Platform.isMobile ? '44px' : '10px';
+		const mobileHeaderRightPadding = Platform.isMobile ? '20px' : '15px';
+
 		// Create modal overlay
 		const modal = createDiv();
 		modal.className = 'mermaid-zoom-modal';
@@ -309,7 +312,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		header.style.cssText = `
 			display: flex;
 			justify-content: flex-end;
-			padding: 10px 15px;
+			padding: ${mobileHeaderTopPadding} ${mobileHeaderRightPadding} 10px 15px;
 			background: var(--background-secondary);
 			border-bottom: 1px solid var(--background-modifier-border);
 			flex: 0 0 auto;
