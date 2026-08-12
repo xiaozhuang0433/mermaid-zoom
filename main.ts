@@ -490,7 +490,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		const controls = container.createDiv('mermaid-zoom-controls');
 		controls.style.cssText = `
 			position: absolute;
-			bottom: 10px;
+			top: 10px;
 			right: 10px;
 			display: flex;
 			z-index: 100;
