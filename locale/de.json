@@ -9,7 +9,7 @@
   "setting.alignment.option.center": "Zentriert",
   "setting.alignment.option.right": "Rechts",
   "setting.maxHeight.name": "Maximale Container-Höhe",
-  "setting.maxHeight.desc": "Maximale Höhe des Zoom-Containers in Pixeln. Auf 0 setzen, um die Größe automatisch so anzupassen, dass das Diagramm bei der aktuellen Zoomstufe vollständig sichtbar ist.",
+  "setting.maxHeight.desc": "Maximale Höhe des Diagramm-Containers in Pixeln. Auf 0 setzen, um die Größe automatisch so anzupassen, dass das Diagramm bei der Standard-Zoomstufe vollständig sichtbar ist.",
   "settings.note": "Änderungen gelten nur für neu dargestellte Diagramme. Laden Sie die Notiz neu, um die Auswirkungen auf vorhandene Diagramme zu sehen.",
   "modal.close": "Schließen",
   "modal.zoomIn": "Vergrößern",

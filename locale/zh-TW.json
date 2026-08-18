@@ -9,7 +9,7 @@
   "setting.alignment.option.center": "置中",
   "setting.alignment.option.right": "右",
   "setting.maxHeight.name": "最大容器高度",
-  "setting.maxHeight.desc": "縮放容器的最大高度（像素）。設為 0 表示自動調整，使圖表在目前縮放層級下完整顯示。",
+  "setting.maxHeight.desc": "圖表容器的最大高度（像素）。設為 0 表示自動調整，使圖表在預設縮放層級下完整顯示。",
   "settings.note": "變更僅對新算繪的圖表生效。重新開啟筆記即可看到對既有圖表的影響。",
   "modal.close": "關閉",
   "modal.zoomIn": "放大",

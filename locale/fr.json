@@ -9,7 +9,7 @@
   "setting.alignment.option.center": "Centre",
   "setting.alignment.option.right": "Droite",
   "setting.maxHeight.name": "Hauteur maximale du conteneur",
-  "setting.maxHeight.desc": "Hauteur maximale en pixels du conteneur de zoom. Définir sur 0 pour ajuster automatiquement afin que le diagramme soit entièrement visible au niveau de zoom actuel.",
+  "setting.maxHeight.desc": "Hauteur maximale en pixels du conteneur du diagramme. Définir sur 0 pour ajuster automatiquement afin que le diagramme soit entièrement visible au niveau de zoom par défaut.",
   "settings.note": "Les modifications s'appliquent aux diagrammes nouvellement rendus. Rechargez la note pour voir l'effet sur les diagrammes existants.",
   "modal.close": "Fermer",
   "modal.zoomIn": "Zoomer",
