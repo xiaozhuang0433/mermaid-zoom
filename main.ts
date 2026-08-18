@@ -1,6 +1,8 @@
-import { Platform, Plugin } from 'obsidian';
+import { Platform, Plugin, setIcon } from 'obsidian';
 import { MermaidZoomSettings, DEFAULT_SETTINGS, MermaidZoomSettingTab } from './settings';
-import { ZoomState, updateTransform, addWheelZoom, addDragPan, addTouchGestures } from './gestures';
+import { ZoomState, updateTransform, zoom, addWheelZoom, addDragPan, addTouchGestures } from './gestures';
+import { t } from './i18n';
+import { exportDiagramPng } from './export';
 
 export default class MermaidZoomPlugin extends Plugin {
 	private readonly zoomStates = new Map<HTMLElement, ZoomState>();
@@ -217,13 +219,12 @@ export default class MermaidZoomPlugin extends Plugin {
 			svg: svg,
 			container: container,
 			svgOriginalWidth: svgOriginalWidth,
-			svgOriginalHeight: svgOriginalHeight,
-			locked: false
+			svgOriginalHeight: svgOriginalHeight
 		};
 		this.zoomStates.set(contentWrapper, state);
 
 		// Inline diagrams are static; the fullscreen modal owns zoom and pan.
-		this.register(this.createControls(container, contentWrapper, state));
+		this.register(this.createControls(container, state));
 
 		// Fit SVG to container initially
 		this.fitToContainer(container, contentWrapper, svg, state);
@@ -283,8 +284,8 @@ export default class MermaidZoomPlugin extends Plugin {
 	}
 
 	private openFullscreenModal(state: ZoomState) {
-		const closeButtonRight = Platform.isMobile ? '20px' : '15px';
-		const closeButtonBottom = Platform.isMobile ? '28px' : '15px';
+		const controlsRight = Platform.isMobile ? '20px' : '15px';
+		const controlsBottom = Platform.isMobile ? '28px' : '15px';
 
 		// Create modal overlay
 		const modal = createDiv();
@@ -298,25 +299,6 @@ export default class MermaidZoomPlugin extends Plugin {
 			flex-direction: column;
 			box-sizing: border-box;
 		`;
-
-		// Create header with close button
-		const header = createDiv();
-		header.className = 'mermaid-zoom-modal-header';
-		header.style.cssText = `
-			position: absolute;
-			bottom: ${closeButtonBottom};
-			right: ${closeButtonRight};
-			z-index: 1;
-		`;
-
-		// Close button
-		const closeBtn = createEl('button');
-		closeBtn.className = 'mermaid-zoom-icon-btn mermaid-zoom-modal-close';
-		closeBtn.textContent = '✕';
-		closeBtn.style.cssText = `
-			font-size: 18px;
-		`;
-		header.appendChild(closeBtn);
 
 		// Create content area
 		const content = createDiv();
@@ -369,11 +351,67 @@ export default class MermaidZoomPlugin extends Plugin {
 			svg: svgClone,
 			container: modalZoomContainer,
 			svgOriginalWidth: state.svgOriginalWidth,
-			svgOriginalHeight: state.svgOriginalHeight,
-			locked: false
+			svgOriginalHeight: state.svgOriginalHeight
 		};
 
-		modal.appendChild(header);
+		// Bottom-right control bar: zoom in/out, reset, scale readout, PNG
+		// export and close — same 26px ghost icon-button style as the inline
+		// fullscreen trigger. Gestures (wheel/pinch/drag) remain the primary
+		// interaction; these buttons cover precision and keyboard/AT users.
+		const controls = createDiv();
+		controls.className = 'mermaid-zoom-modal-controls';
+		controls.style.cssText = `
+			position: absolute;
+			bottom: ${controlsBottom};
+			right: ${controlsRight};
+			z-index: 1;
+			display: flex;
+			align-items: center;
+			gap: 2px;
+		`;
+
+		const makeIconButton = (iconId: string, label: string, onClick: () => void) => {
+			const btn = createEl('button', { cls: 'mermaid-zoom-icon-btn' });
+			setIcon(btn, iconId);
+			btn.setAttribute('aria-label', label);
+			btn.title = label;
+			btn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				onClick();
+			});
+			controls.appendChild(btn);
+		};
+
+		makeIconButton('plus', t('modal.zoomIn'), () => zoom(modalContentWrapper, modalState, 1.2));
+		makeIconButton('minus', t('modal.zoomOut'), () => zoom(modalContentWrapper, modalState, 0.8));
+		makeIconButton('rotate-ccw', t('modal.reset'), () => {
+			this.fitToContainerModal(modalZoomContainer, modalContentWrapper, modalState);
+		});
+
+		// Scale readout, kept in sync by updateTransform on every change.
+		const scaleIndicator = createSpan({ cls: 'mermaid-zoom-scale' });
+		scaleIndicator.style.cssText = `
+			min-width: 38px;
+			text-align: center;
+			font-size: 12px;
+			font-family: var(--font-ui-medium);
+			color: var(--text-muted);
+		`;
+		modalState.scaleIndicator = scaleIndicator;
+		controls.appendChild(scaleIndicator);
+
+		makeIconButton('download', t('export.buttonTitle'), () => {
+			void exportDiagramPng(this.app, svgClone, state.svgOriginalWidth, state.svgOriginalHeight, this.settings.exportDestination);
+		});
+
+		// Close button ends the bar; hover gets a destructive tint via CSS.
+		const closeBtn = createEl('button', { cls: 'mermaid-zoom-icon-btn mermaid-zoom-modal-close' });
+		setIcon(closeBtn, 'x');
+		closeBtn.setAttribute('aria-label', t('modal.close'));
+		closeBtn.title = t('modal.close');
+		controls.appendChild(closeBtn);
+
+		modal.appendChild(controls);
 		modal.appendChild(content);
 
 		// 注册模态框交互，收集清理函数以便关闭时移除
@@ -414,6 +452,12 @@ export default class MermaidZoomPlugin extends Plugin {
 		const handleKeydown = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') {
 				closeModal();
+			} else if (e.key === '+' || e.key === '=') {
+				zoom(modalContentWrapper, modalState, 1.2);
+			} else if (e.key === '-' || e.key === '_') {
+				zoom(modalContentWrapper, modalState, 0.8);
+			} else if (e.key === '0') {
+				this.fitToContainerModal(modalZoomContainer, modalContentWrapper, modalState);
 			}
 		};
 		document.addEventListener('keydown', handleKeydown);
@@ -467,7 +511,7 @@ export default class MermaidZoomPlugin extends Plugin {
 		updateTransform(contentWrapper, state);
 	}
 
-	private createControls(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState): () => void {
+	private createControls(container: HTMLElement, state: ZoomState): () => void {
 		const controls = container.createDiv('mermaid-zoom-controls');
 		controls.style.cssText = `
 			position: absolute;
@@ -476,9 +520,6 @@ export default class MermaidZoomPlugin extends Plugin {
 			display: flex;
 			z-index: 100;
 		`;
-
-		// Match the cursor class to the default locked state on first render.
-		contentWrapper.classList.toggle('locked', state.locked);
 
 		const fullscreenBtn = controls.createEl('button', {
 			cls: 'mermaid-zoom-icon-btn mermaid-zoom-fullscreen-btn'
@@ -522,23 +563,6 @@ export default class MermaidZoomPlugin extends Plugin {
 			fullscreenBtn.remove();
 			controls.remove();
 		};
-	}
-
-	private styleButton(btn: HTMLButtonElement) {
-		btn.addClass('mermaid-zoom-btn');
-		btn.style.cssText = `
-			width: 28px;
-			height: 28px;
-			border: none;
-			color: var(--text-normal);
-			border-radius: 4px;
-			cursor: pointer;
-			font-size: 16px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			transition: background 0.2s;
-		`;
 	}
 
 	onunload() {

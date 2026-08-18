@@ -7,28 +7,46 @@ export interface ZoomState {
 	startY: number;
 	translateX: number;
 	translateY: number;
+	// Optional readout showing the current scale as a percentage; updated
+	// by updateTransform whenever the transform changes.
+	scaleIndicator?: HTMLElement;
 	svg: SVGSVGElement;
 	container: HTMLElement;
 	// Original SVG dimensions (saved once)
 	svgOriginalWidth: number;
 	svgOriginalHeight: number;
-	// Whether this diagram is locked (inline view only; the modal always
-	// sets this to false). Default true: when locked, wheel zoom, drag-pan
-	// and touch gestures are all disabled so the page scrolls/touches
-	// normally through the diagram. Unlock via the lock button to interact.
-	locked: boolean;
 }
 
 export function updateTransform(contentWrapper: HTMLElement, state: ZoomState) {
 	contentWrapper.style.transform = `translate(${state.translateX}px, ${state.translateY}px) scale(${state.scale})`;
+
+	// Update scale indicator
+	if (state.scaleIndicator) {
+		state.scaleIndicator.textContent = `${Math.round(state.scale * 100)}%`;
+	}
+}
+
+/** Zoom by a multiplicative factor, keeping the container's center fixed. */
+export function zoom(contentWrapper: HTMLElement, state: ZoomState, factor: number) {
+	let newScale = state.scale * factor;
+	newScale = Math.max(state.minScale, Math.min(state.maxScale, newScale));
+
+	// Center the zoom on the middle of the container
+	const container = state.container;
+	const rect = container.getBoundingClientRect();
+	const centerX = rect.width / 2;
+	const centerY = rect.height / 2;
+	const scaleRatio = newScale / state.scale;
+
+	state.translateX = centerX - (centerX - state.translateX) * scaleRatio;
+	state.translateY = centerY - (centerY - state.translateY) * scaleRatio;
+
+	state.scale = newScale;
+	updateTransform(contentWrapper, state);
 }
 
 export function addWheelZoom(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState): () => void {
 	const wheelHandler = (e: WheelEvent) => {
-		// Locked diagrams don't zoom on wheel. Returning here before
-		// preventDefault() lets the page scroll normally when locked.
-		if (state.locked) return;
-
 		e.preventDefault();
 
 		const rect = container.getBoundingClientRect();
@@ -60,7 +78,6 @@ export function addDragPan(container: HTMLElement, contentWrapper: HTMLElement, 
 	contentWrapper.classList.add('mermaid-zoom-content');
 
 	container.addEventListener('mousedown', (e) => {
-		if (state.locked) return; // Locked diagrams can't be drag-panned.
 		if (e.button === 0) { // 左键按下
 			state.isDragging = true;
 			state.startX = e.clientX - state.translateX;
@@ -104,7 +121,6 @@ export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLEle
 	let initialCenterY = 0;
 
 	const onTouchStart = (e: TouchEvent) => {
-		if (state.locked) return; // Locked diagrams ignore touch gestures.
 		if (e.touches.length === 2) {
 			// 双指缩放
 			const touch1 = e.touches[0];
@@ -130,10 +146,6 @@ export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLEle
 	};
 
 	const onTouchMove = (e: TouchEvent) => {
-		// Locked diagrams don't handle touch; skip before preventDefault() so
-		// the page scrolls/zooms normally under the touch.
-		if (state.locked) return;
-
 		e.preventDefault();
 
 		if (e.touches.length === 2) {

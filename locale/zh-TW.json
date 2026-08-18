@@ -12,5 +12,7 @@
   "setting.maxHeight.desc": "縮放容器的最大高度（像素）。設為 0 表示自動調整，使圖表在目前縮放層級下完整顯示。",
   "settings.note": "變更僅對新算繪的圖表生效。重新開啟筆記即可看到對既有圖表的影響。",
   "modal.close": "關閉",
-  "lock.label": "鎖定"
+  "modal.zoomIn": "放大",
+  "modal.zoomOut": "縮小",
+  "modal.reset": "重設縮放"
 }

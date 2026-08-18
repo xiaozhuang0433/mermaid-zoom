@@ -38,15 +38,6 @@
 	cursor: grabbing;
 }
 
-/* Zoom buttons — same reason: background declared here, not as an inline style. */
-.mermaid-zoom-btn {
-	background: var(--interactive-normal);
-}
-
-.mermaid-zoom-btn:hover {
-	background: var(--interactive-hover);
-}
-
 .mermaid-zoom-icon-btn {
 	width: 26px;
 	height: 26px;
@@ -62,9 +53,24 @@
 	opacity: 0.72;
 }
 
+/* setIcon() ships Lucide SVGs at 24px; fit them to the 18px content box
+   (26px minus padding). Also keeps hand-built inline icons consistent. */
+.mermaid-zoom-icon-btn svg {
+	width: 18px;
+	height: 18px;
+}
+
 .mermaid-zoom-icon-btn:hover,
 .mermaid-zoom-icon-btn:active {
 	background: rgba(0, 0, 0, 0.06);
 	color: var(--text-normal);
 	opacity: 1;
+}
+
+/* Close button in the modal control bar. Compound selector keeps
+   specificity above .mermaid-zoom-icon-btn:hover so the red tint wins,
+   reading as a destructive/dismiss affordance distinct from zoom controls. */
+.mermaid-zoom-icon-btn.mermaid-zoom-modal-close:hover {
+	background: var(--background-modifier-error);
+	color: var(--text-on-accent);
 }

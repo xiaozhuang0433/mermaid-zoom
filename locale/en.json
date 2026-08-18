@@ -20,5 +20,7 @@
   "export.downloadedNotice": "Downloaded: {name}",
   "export.failedNotice": "Failed to export PNG",
   "modal.close": "Close",
-  "lock.label": "Lock"
+  "modal.zoomIn": "Zoom in",
+  "modal.zoomOut": "Zoom out",
+  "modal.reset": "Reset zoom"
 }

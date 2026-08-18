@@ -20,5 +20,7 @@
   "export.downloadedNotice": "已下载：{name}",
   "export.failedNotice": "导出 PNG 失败",
   "modal.close": "关闭",
-  "lock.label": "锁定"
+  "modal.zoomIn": "放大",
+  "modal.zoomOut": "缩小",
+  "modal.reset": "重置缩放"
 }

@@ -24,9 +24,9 @@ There are no tests.
 
 ## Architecture
 
-- `main.ts` (~680 lines) — `MermaidZoomPlugin` (extends Obsidian `Plugin`): lifecycle, diagram detection (`MutationObserver` + `registerMarkdownCodeBlockProcessor`), fit/layout math, fullscreen modal, and controls UI.
+- `main.ts` (~580 lines) — `MermaidZoomPlugin` (extends Obsidian `Plugin`): lifecycle, diagram detection (`MutationObserver` + `registerMarkdownCodeBlockProcessor`), fit/layout math, fullscreen modal, and controls UI. Inline diagrams are static (no gestures); the fullscreen modal owns all zoom/pan interaction and its control bar (zoom/reset/export/close).
 - `settings.ts` — `MermaidZoomSettings` interface, `DEFAULT_SETTINGS`, and `MermaidZoomSettingTab` (settings UI). Uses a type-only import of `MermaidZoomPlugin` from `main.ts` (no runtime cycle).
-- `gestures.ts` — `ZoomState` interface plus free functions `addWheelZoom` / `addDragPan` / `addTouchGestures` / `addResizeHandles` / `zoom` / `updateTransform`. Pure functions of `(container, contentWrapper, state)` with no `this`/settings dependency; `addResizeHandles` takes a `reset: () => void` callback.
+- `gestures.ts` — `ZoomState` interface plus free functions `addWheelZoom` / `addDragPan` / `addTouchGestures` / `zoom` / `updateTransform`. Pure functions of `(container, contentWrapper, state)` with no `this`/settings dependency; only used by the fullscreen modal.
 - Zoom state per diagram stored in `Map<HTMLElement, ZoomState>` (in `main.ts`)
 - Lifecycle: the gesture functions (in `gestures.ts`) each return a `() => void` cleanup function, registered via `this.register()` for automatic cleanup on plugin unload. Fullscreen modal manages its own cleanup in `closeModal`.
 - Build: esbuild → `main.js` (CommonJS), TypeScript strict mode (`noImplicitAny`, `strictNullChecks`)

@@ -12,5 +12,7 @@
   "setting.maxHeight.desc": "확대/축소 컨테이너의 최대 높이(픽셀). 0으로 설정하면 현재 확대/축소 수준에서 다이어그램이 완전히 보이도록 자동으로 맞춰집니다.",
   "settings.note": "변경 사항은 새로 렌더링된 다이어그램에만 적용됩니다. 기존 다이어그램에 미치는 효과를 보려면 노트를 다시 여십시오.",
   "modal.close": "닫기",
-  "lock.label": "잠금"
+  "modal.zoomIn": "확대",
+  "modal.zoomOut": "축소",
+  "modal.reset": "확대/축소 재설정"
 }

@@ -12,5 +12,7 @@
   "setting.maxHeight.desc": "Hauteur maximale en pixels du conteneur de zoom. Définir sur 0 pour ajuster automatiquement afin que le diagramme soit entièrement visible au niveau de zoom actuel.",
   "settings.note": "Les modifications s'appliquent aux diagrammes nouvellement rendus. Rechargez la note pour voir l'effet sur les diagrammes existants.",
   "modal.close": "Fermer",
-  "lock.label": "Verrouiller"
+  "modal.zoomIn": "Zoomer",
+  "modal.zoomOut": "Dézoomer",
+  "modal.reset": "Réinitialiser le zoom"
 }
