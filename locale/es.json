@@ -1,6 +1,8 @@
 {
   "setting.defaultZoom.name": "Nivel de zoom predeterminado",
   "setting.defaultZoom.desc": "Porcentaje de zoom inicial al renderizar un diagrama de Mermaid. 100 % se ajusta al contenedor; valores más altos hacen que los diagramas se vean más grandes por defecto.",
+  "setting.zoomSensitivity.name": "Sensibilidad de zoom",
+  "setting.zoomSensitivity.desc": "La intensidad con la que amplían la rueda del ratón y el gesto de pellizco. Los valores bajos se sienten más suaves: prueba 0.5x si el zoom con el trackpad o el Magic Mouse va demasiado rápido. Se aplica al volver a abrir una vista a pantalla completa.",
   "setting.containerBorder.name": "Mostrar borde del contenedor",
   "setting.containerBorder.desc": "Muestra un borde discontinuo alrededor de cada contenedor de diagrama para visualizar mejor los límites del área de zoom.",
   "setting.alignment.name": "Alineación predeterminada",
@@ -9,8 +11,10 @@
   "setting.alignment.option.center": "Centro",
   "setting.alignment.option.right": "Derecha",
   "setting.maxHeight.name": "Altura máxima del contenedor",
-  "setting.maxHeight.desc": "Altura máxima en píxeles del contenedor de zoom. Establecer en 0 para que se ajuste automáticamente y el diagrama sea completamente visible con el nivel de zoom actual.",
+  "setting.maxHeight.desc": "Altura máxima en píxeles del contenedor del diagrama. Establecer en 0 para que se ajuste automáticamente y el diagrama sea completamente visible con el nivel de zoom predeterminado.",
   "settings.note": "Los cambios se aplican a los diagramas recién renderizados. Vuelve a cargar la nota para ver el efecto en los diagramas existentes.",
   "modal.close": "Cerrar",
-  "lock.label": "Bloquear"
+  "modal.zoomIn": "Acercar",
+  "modal.zoomOut": "Alejar",
+  "modal.reset": "Restablecer zoom"
 }

@@ -7,17 +7,14 @@ export interface ZoomState {
 	startY: number;
 	translateX: number;
 	translateY: number;
+	// Optional readout showing the current scale as a percentage; updated
+	// by updateTransform whenever the transform changes.
 	scaleIndicator?: HTMLElement;
 	svg: SVGSVGElement;
 	container: HTMLElement;
 	// Original SVG dimensions (saved once)
 	svgOriginalWidth: number;
 	svgOriginalHeight: number;
-	// Whether this diagram is locked (inline view only; the modal always
-	// sets this to false). Default true: when locked, wheel zoom, drag-pan
-	// and touch gestures are all disabled so the page scrolls/touches
-	// normally through the diagram. Unlock via the lock button to interact.
-	locked: boolean;
 }
 
 export function updateTransform(contentWrapper: HTMLElement, state: ZoomState) {
@@ -29,41 +26,50 @@ export function updateTransform(contentWrapper: HTMLElement, state: ZoomState) {
 	}
 }
 
+/** Zoom by a multiplicative factor, keeping the container's center fixed. */
 export function zoom(contentWrapper: HTMLElement, state: ZoomState, factor: number) {
 	let newScale = state.scale * factor;
 	newScale = Math.max(state.minScale, Math.min(state.maxScale, newScale));
 
-	// Center the zoom
-	const container = contentWrapper.parentElement;
-	if (container) {
-		const rect = container.getBoundingClientRect();
-		const centerX = rect.width / 2;
-		const centerY = rect.height / 2;
-		const scaleRatio = newScale / state.scale;
+	// Center the zoom on the middle of the container
+	const container = state.container;
+	const rect = container.getBoundingClientRect();
+	const centerX = rect.width / 2;
+	const centerY = rect.height / 2;
+	const scaleRatio = newScale / state.scale;
 
-		state.translateX = centerX - (centerX - state.translateX) * scaleRatio;
-		state.translateY = centerY - (centerY - state.translateY) * scaleRatio;
-	}
+	state.translateX = centerX - (centerX - state.translateX) * scaleRatio;
+	state.translateY = centerY - (centerY - state.translateY) * scaleRatio;
 
 	state.scale = newScale;
 	updateTransform(contentWrapper, state);
 }
 
-export function addWheelZoom(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState): () => void {
+export function addWheelZoom(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState, sensitivity = 1): () => void {
 	const wheelHandler = (e: WheelEvent) => {
-		// Locked diagrams don't zoom on wheel. Returning here before
-		// preventDefault() lets the page scroll normally when locked.
-		if (state.locked) return;
-
 		e.preventDefault();
 
 		const rect = container.getBoundingClientRect();
 		const mouseX = e.clientX - rect.left;
 		const mouseY = e.clientY - rect.top;
 
-		const delta = e.deltaY > 0 ? 0.9 : 1.1;
+		// Normalize the delta to pixels: line-mode (deltaMode 1) deltas are
+		// line counts, page-mode (2) are page fractions.
+		let deltaPx = e.deltaY;
+		if (e.deltaMode === 1) deltaPx *= 33;
+		else if (e.deltaMode === 2) deltaPx *= 300;
+
+		// Clamp a single event to one notch (~100px) so coarse devices
+		// can't skip several zoom steps at once.
+		const clamped = Math.max(-100, Math.min(100, deltaPx));
+
+		// Scale the zoom step with the actual scroll amount: a full mouse
+		// notch (~100px) zooms ~11% (matching the old fixed step), while
+		// the tiny deltas from trackpads and Magic Mouse zoom ~0.5% each,
+		// so high-resolution devices no longer feel hair-triggered.
+		const factor = Math.exp((-clamped / 100) * 0.12 * sensitivity);
 		const oldScale = state.scale;
-		let newScale = oldScale * delta;
+		let newScale = oldScale * factor;
 		newScale = Math.max(state.minScale, Math.min(state.maxScale, newScale));
 
 		if (newScale !== oldScale) {
@@ -86,7 +92,6 @@ export function addDragPan(container: HTMLElement, contentWrapper: HTMLElement, 
 	contentWrapper.classList.add('mermaid-zoom-content');
 
 	container.addEventListener('mousedown', (e) => {
-		if (state.locked) return; // Locked diagrams can't be drag-panned.
 		if (e.button === 0) { // 左键按下
 			state.isDragging = true;
 			state.startX = e.clientX - state.translateX;
@@ -121,12 +126,15 @@ export function addDragPan(container: HTMLElement, contentWrapper: HTMLElement, 
 	};
 }
 
-export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState): () => void {
+export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState, sensitivity = 1): () => void {
 	let initialDistance = 0;
 	let initialScale = 1;
+	let initialTranslateX = 0;
+	let initialTranslateY = 0;
+	let initialCenterX = 0;
+	let initialCenterY = 0;
 
 	const onTouchStart = (e: TouchEvent) => {
-		if (state.locked) return; // Locked diagrams ignore touch gestures.
 		if (e.touches.length === 2) {
 			// 双指缩放
 			const touch1 = e.touches[0];
@@ -136,6 +144,13 @@ export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLEle
 				touch2.clientY - touch1.clientY
 			);
 			initialScale = state.scale;
+			initialTranslateX = state.translateX;
+			initialTranslateY = state.translateY;
+
+			const rect = container.getBoundingClientRect();
+			initialCenterX = (touch1.clientX + touch2.clientX) / 2 - rect.left;
+			initialCenterY = (touch1.clientY + touch2.clientY) / 2 - rect.top;
+			state.isDragging = false;
 		} else if (e.touches.length === 1) {
 			// 单指拖拽
 			state.isDragging = true;
@@ -145,13 +160,11 @@ export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLEle
 	};
 
 	const onTouchMove = (e: TouchEvent) => {
-		// Locked diagrams don't handle touch; skip before preventDefault() so
-		// the page scrolls/zooms normally under the touch.
-		if (state.locked) return;
-
 		e.preventDefault();
 
 		if (e.touches.length === 2) {
+			if (initialDistance === 0) return;
+
 			// 双指缩放
 			const touch1 = e.touches[0];
 			const touch2 = e.touches[1];
@@ -161,9 +174,18 @@ export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLEle
 			);
 
 			const scaleRatio = currentDistance / initialDistance;
-			let newScale = initialScale * scaleRatio;
+			// Sensitivity acts as an exponent on the finger-distance ratio:
+			// < 1 softens the pinch response, > 1 amplifies it.
+			let newScale = initialScale * Math.pow(scaleRatio, sensitivity);
 			newScale = Math.max(state.minScale, Math.min(state.maxScale, newScale));
 
+			const rect = container.getBoundingClientRect();
+			const currentCenterX = (touch1.clientX + touch2.clientX) / 2 - rect.left;
+			const currentCenterY = (touch1.clientY + touch2.clientY) / 2 - rect.top;
+			const appliedScaleRatio = newScale / initialScale;
+
+			state.translateX = currentCenterX - (initialCenterX - initialTranslateX) * appliedScaleRatio;
+			state.translateY = currentCenterY - (initialCenterY - initialTranslateY) * appliedScaleRatio;
 			state.scale = newScale;
 			updateTransform(contentWrapper, state);
 		} else if (e.touches.length === 1 && state.isDragging) {
@@ -181,137 +203,13 @@ export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLEle
 	container.addEventListener('touchstart', onTouchStart);
 	container.addEventListener('touchmove', onTouchMove, { passive: false });
 	container.addEventListener('touchend', onTouchEnd);
+	container.addEventListener('touchcancel', onTouchEnd);
 
 	return () => {
 		container.removeEventListener('touchstart', onTouchStart);
 		container.removeEventListener('touchmove', onTouchMove);
 		container.removeEventListener('touchend', onTouchEnd);
+		container.removeEventListener('touchcancel', onTouchEnd);
 	};
 }
 
-export function addResizeHandles(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState, reset: () => void): () => void {
-	// 光标类型到 CSS 类名的映射
-	const cursorClassMap: Record<string, string> = {
-		'nwse-resize': 'mermaid-zoom-resizing-nwse',
-		'nesw-resize': 'mermaid-zoom-resizing-nesw',
-		'ns-resize': 'mermaid-zoom-resizing-ns',
-		'ew-resize': 'mermaid-zoom-resizing-ew'
-	};
-
-	// 定义调整大小手柄：4个角 + 4条边
-	const handles = [
-		{ position: 'top-left', cursor: 'nwse-resize', style: 'top: 0; left: 0; width: 12px; height: 12px;' },
-		{ position: 'top-right', cursor: 'nesw-resize', style: 'top: 0; right: 0; width: 12px; height: 12px;' },
-		{ position: 'bottom-left', cursor: 'nesw-resize', style: 'bottom: 0; left: 0; width: 12px; height: 12px;' },
-		{ position: 'bottom-right', cursor: 'nwse-resize', style: 'bottom: 0; right: 0; width: 12px; height: 12px;' },
-		{ position: 'top', cursor: 'ns-resize', style: 'top: 0; left: 12px; right: 12px; height: 6px;' },
-		{ position: 'bottom', cursor: 'ns-resize', style: 'bottom: 0; left: 12px; right: 12px; height: 6px;' },
-		{ position: 'left', cursor: 'ew-resize', style: 'top: 12px; bottom: 12px; left: 0; width: 6px;' },
-		{ position: 'right', cursor: 'ew-resize', style: 'top: 12px; bottom: 12px; right: 0; width: 6px;' },
-	];
-
-	// 收集所有 document 级监听器引用，用于统一清理
-	const documentListeners: Array<{ type: string; fn: EventListener }> = [];
-
-	// 获取初始边距值
-	let currentMarginLeft = 0;
-	let currentMarginTop = 0;
-
-	handles.forEach(({ position, cursor, style }) => {
-		const handle = container.createDiv(`mermaid-resize-${position}`);
-		handle.style.cssText = `
-			position: absolute;
-			${style}
-			cursor: ${cursor};
-			z-index: 50;
-		`;
-
-		const resizeClass = cursorClassMap[cursor];
-		let isResizing = false;
-		let startX = 0;
-		let startY = 0;
-		let startWidth = 0;
-		let startHeight = 0;
-		let startMarginLeft = 0;
-		let startMarginTop = 0;
-
-		const onMouseDown = (e: MouseEvent) => {
-			e.preventDefault();
-			e.stopPropagation();
-			isResizing = true;
-			startX = e.clientX;
-			startY = e.clientY;
-			startWidth = container.offsetWidth;
-			startHeight = container.offsetHeight;
-			startMarginLeft = currentMarginLeft;
-			startMarginTop = currentMarginTop;
-			document.body.addClass(resizeClass);
-		};
-
-		const onMouseMove = (e: MouseEvent) => {
-			if (!isResizing) return;
-			e.preventDefault();
-
-			const deltaX = e.clientX - startX;
-			const deltaY = e.clientY - startY;
-
-			let newWidth = startWidth;
-			let newHeight = startHeight;
-			let newMarginLeft = startMarginLeft;
-			let newMarginTop = startMarginTop;
-
-			// 水平方向调整
-			if (position.includes('right')) {
-				newWidth = Math.max(150, startWidth + deltaX);
-			} else if (position.includes('left')) {
-				// 使用负边距向左扩展
-				const widthDelta = -deltaX;
-				newWidth = Math.max(150, startWidth + widthDelta);
-				if (newWidth > 150) {
-					newMarginLeft = startMarginLeft + deltaX;
-				}
-			}
-
-			// 垂直方向调整
-			if (position.includes('bottom')) {
-				newHeight = Math.max(100, startHeight + deltaY);
-			} else if (position.includes('top')) {
-				// 使用负边距向上扩展
-				const heightDelta = -deltaY;
-				newHeight = Math.max(100, startHeight + heightDelta);
-				if (newHeight > 100) {
-					newMarginTop = startMarginTop + deltaY;
-				}
-			}
-
-			container.style.width = `${newWidth}px`;
-			container.style.height = `${newHeight}px`;
-			container.style.marginLeft = `${newMarginLeft}px`;
-			container.style.marginTop = `${newMarginTop}px`;
-			currentMarginLeft = newMarginLeft;
-			currentMarginTop = newMarginTop;
-		};
-
-		const onMouseUp = () => {
-			if (!isResizing) return;
-			isResizing = false;
-			document.body.removeClass(resizeClass);
-			reset();
-		};
-
-		handle.addEventListener('mousedown', onMouseDown);
-		document.addEventListener('mousemove', onMouseMove);
-		document.addEventListener('mouseup', onMouseUp);
-		documentListeners.push(
-			{ type: 'mousemove', fn: onMouseMove },
-			{ type: 'mouseup', fn: onMouseUp }
-		);
-	});
-
-	// 返回清理函数，批量移除所有 document 级监听器
-	return () => {
-		for (const { type, fn } of documentListeners) {
-			document.removeEventListener(type, fn);
-		}
-	};
-}

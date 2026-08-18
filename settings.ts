@@ -6,6 +6,7 @@ import type { ExportDestination } from './export';
 
 export interface MermaidZoomSettings {
 	defaultZoom: number; // percentage, e.g. 100 means 100%
+	zoomSensitivity: number; // multiplier on wheel/pinch zoom strength, 1 = default
 	showContainerBorder: boolean;
 	alignment: 'left' | 'center' | 'right';
 	maxHeight: number; // pixels, 0 = auto (fit content at current zoom)
@@ -14,6 +15,7 @@ export interface MermaidZoomSettings {
 
 export const DEFAULT_SETTINGS: MermaidZoomSettings = {
 	defaultZoom: 100,
+	zoomSensitivity: 1,
 	showContainerBorder: false,
 	alignment: 'center',
 	maxHeight: 0,
@@ -45,6 +47,19 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 					step: 5,
 					defaultValue: 100,
 					displayFormat: (value) => `${value}%`,
+				},
+			},
+			{
+				name: t('setting.zoomSensitivity.name'),
+				desc: t('setting.zoomSensitivity.desc'),
+				control: {
+					type: 'slider',
+					key: 'zoomSensitivity',
+					min: 0.2,
+					max: 3,
+					step: 0.1,
+					defaultValue: 1,
+					displayFormat: (value) => `${value}x`,
 				},
 			},
 			{
@@ -117,6 +132,17 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.defaultZoom)
 				.onChange(async (value) => {
 					this.plugin.settings.defaultZoom = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName(t('setting.zoomSensitivity.name'))
+			.setDesc(t('setting.zoomSensitivity.desc'))
+			.addSlider(slider => slider
+				.setLimits(0.2, 3, 0.1)
+				.setValue(this.plugin.settings.zoomSensitivity)
+				.onChange(async (value) => {
+					this.plugin.settings.zoomSensitivity = value;
 					await this.plugin.saveSettings();
 				}));
 

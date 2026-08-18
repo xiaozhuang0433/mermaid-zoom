@@ -1,6 +1,6 @@
-import { Platform, Plugin, ToggleComponent } from 'obsidian';
+import { Platform, Plugin, setIcon } from 'obsidian';
 import { MermaidZoomSettings, DEFAULT_SETTINGS, MermaidZoomSettingTab } from './settings';
-import { ZoomState, updateTransform, zoom, addWheelZoom, addDragPan, addTouchGestures, addResizeHandles } from './gestures';
+import { ZoomState, updateTransform, zoom, addWheelZoom, addDragPan, addTouchGestures } from './gestures';
 import { t } from './i18n';
 import { exportDiagramPng } from './export';
 
@@ -219,16 +219,12 @@ export default class MermaidZoomPlugin extends Plugin {
 			svg: svg,
 			container: container,
 			svgOriginalWidth: svgOriginalWidth,
-			svgOriginalHeight: svgOriginalHeight,
-			locked: true
+			svgOriginalHeight: svgOriginalHeight
 		};
 		this.zoomStates.set(contentWrapper, state);
 
-		// 注册控件和交互，插件卸载时自动清理
-		this.register(this.createControls(container, contentWrapper, state));
-		this.register(addWheelZoom(container, contentWrapper, state));
-		this.register(addDragPan(container, contentWrapper, state));
-		this.register(addTouchGestures(container, contentWrapper, state));
+		// Inline diagrams are static; the fullscreen modal owns zoom and pan.
+		this.register(this.createControls(container, state));
 
 		// Fit SVG to container initially
 		this.fitToContainer(container, contentWrapper, svg, state);
@@ -288,50 +284,21 @@ export default class MermaidZoomPlugin extends Plugin {
 	}
 
 	private openFullscreenModal(state: ZoomState) {
+		const controlsRight = Platform.isMobile ? '20px' : '15px';
+		const controlsBottom = Platform.isMobile ? '28px' : '15px';
+
 		// Create modal overlay
 		const modal = createDiv();
 		modal.className = 'mermaid-zoom-modal';
 		modal.style.cssText = `
 			position: fixed;
-			top: 0;
-			left: 0;
-			width: 100vw;
-			height: 100vh;
+			inset: 0;
 			background: var(--background-primary);
 			z-index: 9999;
 			display: flex;
 			flex-direction: column;
+			box-sizing: border-box;
 		`;
-
-		// Create header with close button
-		const header = createDiv();
-		header.className = 'mermaid-zoom-modal-header';
-		header.style.cssText = `
-			display: flex;
-			justify-content: flex-end;
-			padding: 10px 15px;
-			background: var(--background-secondary);
-			border-bottom: 1px solid var(--background-modifier-border);
-		`;
-
-		// Close button
-		const closeBtn = createEl('button');
-		closeBtn.className = 'mermaid-zoom-modal-close';
-		closeBtn.textContent = '✕';
-		closeBtn.style.cssText = `
-			width: 32px;
-			height: 32px;
-			border: none;
-			color: var(--text-normal);
-			border-radius: 4px;
-			cursor: pointer;
-			font-size: 18px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			transition: background 0.2s;
-		`;
-		header.appendChild(closeBtn);
 
 		// Create content area
 		const content = createDiv();
@@ -371,21 +338,6 @@ export default class MermaidZoomPlugin extends Plugin {
 		modalZoomContainer.appendChild(modalContentWrapper);
 		content.appendChild(modalZoomContainer);
 
-		// Create modal controls
-		const controls = createDiv();
-		controls.className = 'mermaid-zoom-modal-controls';
-		controls.style.cssText = `
-			position: absolute;
-			bottom: 20px;
-			right: 20px;
-			display: flex;
-			gap: 5px;
-			background: var(--background-secondary);
-			padding: 8px;
-			border-radius: 8px;
-			box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-		`;
-
 		// Modal zoom state
 		const modalState: ZoomState = {
 			scale: 1,
@@ -399,86 +351,74 @@ export default class MermaidZoomPlugin extends Plugin {
 			svg: svgClone,
 			container: modalZoomContainer,
 			svgOriginalWidth: state.svgOriginalWidth,
-			svgOriginalHeight: state.svgOriginalHeight,
-			locked: false
+			svgOriginalHeight: state.svgOriginalHeight
 		};
 
-		// Add zoom buttons
-		const zoomInBtn = createEl('button');
-		zoomInBtn.textContent = '+';
-		this.styleButton(zoomInBtn);
-		zoomInBtn.addEventListener('click', () => zoom(modalContentWrapper, modalState, 1.2));
+		// Bottom-right control bar: zoom in/out, reset, scale readout, PNG
+		// export and close — same 26px ghost icon-button style as the inline
+		// fullscreen trigger. Gestures (wheel/pinch/drag) remain the primary
+		// interaction; these buttons cover precision and keyboard/AT users.
+		const controls = createDiv();
+		controls.className = 'mermaid-zoom-modal-controls';
+		controls.style.cssText = `
+			position: absolute;
+			bottom: ${controlsBottom};
+			right: ${controlsRight};
+			z-index: 1;
+			display: flex;
+			align-items: center;
+			gap: 2px;
+		`;
 
-		const zoomOutBtn = createEl('button');
-		zoomOutBtn.textContent = '-';
-		this.styleButton(zoomOutBtn);
-		zoomOutBtn.addEventListener('click', () => zoom(modalContentWrapper, modalState, 0.8));
+		const makeIconButton = (iconId: string, label: string, onClick: () => void) => {
+			const btn = createEl('button', { cls: 'mermaid-zoom-icon-btn' });
+			setIcon(btn, iconId);
+			btn.setAttribute('aria-label', label);
+			btn.title = label;
+			btn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				onClick();
+			});
+			controls.appendChild(btn);
+		};
 
-		const resetBtn = createEl('button');
-		resetBtn.textContent = '⟲';
-		this.styleButton(resetBtn);
-		resetBtn.addEventListener('click', () => {
+		makeIconButton('plus', t('modal.zoomIn'), () => zoom(modalContentWrapper, modalState, 1.2));
+		makeIconButton('minus', t('modal.zoomOut'), () => zoom(modalContentWrapper, modalState, 0.8));
+		makeIconButton('rotate-ccw', t('modal.reset'), () => {
 			this.fitToContainerModal(modalZoomContainer, modalContentWrapper, modalState);
 		});
 
-		// Export PNG button
-		const exportBtn = createEl('button');
-		exportBtn.textContent = '⤓';
-		exportBtn.title = t('export.buttonTitle');
-		this.styleButton(exportBtn);
-		exportBtn.addEventListener('click', () => {
-			void exportDiagramPng(this.app, state.svg, state.svgOriginalWidth, state.svgOriginalHeight, this.settings.exportDestination);
-		});
-
-		// Scale indicator
-		const scaleIndicator = createSpan();
+		// Scale readout, kept in sync by updateTransform on every change.
+		const scaleIndicator = createSpan({ cls: 'mermaid-zoom-scale' });
 		scaleIndicator.style.cssText = `
-			padding: 4px 8px;
+			min-width: 38px;
+			text-align: center;
 			font-size: 12px;
 			font-family: var(--font-ui-medium);
 			color: var(--text-muted);
-			min-width: 45px;
-			text-align: center;
 		`;
 		modalState.scaleIndicator = scaleIndicator;
-
-		// Close button in the controls bar — a second, more discoverable close
-		// affordance. The header ✕ (top-right corner) is easy to miss on a
-		// phone, so we also surface close here, next to the zoom controls.
-		const controlsCloseBtn = createEl('button');
-		controlsCloseBtn.textContent = '✕';
-		controlsCloseBtn.title = t('modal.close');
-		controlsCloseBtn.setAttribute('aria-label', t('modal.close'));
-		this.styleButton(controlsCloseBtn);
-		controlsCloseBtn.addClass('mermaid-modal-close-btn');
-
-		// Thin divider separating the zoom controls from the action buttons
-		// (export, close) on the right.
-		const controlsSeparator = createDiv();
-		controlsSeparator.style.cssText = `
-			width: 1px;
-			align-self: stretch;
-			margin: 2px 4px;
-			background: var(--background-modifier-border);
-		`;
-
-		controls.appendChild(zoomInBtn);
-		controls.appendChild(zoomOutBtn);
-		controls.appendChild(resetBtn);
 		controls.appendChild(scaleIndicator);
-		controls.appendChild(controlsSeparator);
-		controls.appendChild(exportBtn);
-		controls.appendChild(controlsCloseBtn);
-		content.appendChild(controls);
 
-		modal.appendChild(header);
+		makeIconButton('download', t('export.buttonTitle'), () => {
+			void exportDiagramPng(this.app, svgClone, state.svgOriginalWidth, state.svgOriginalHeight, this.settings.exportDestination);
+		});
+
+		// Close button ends the bar; hover gets a destructive tint via CSS.
+		const closeBtn = createEl('button', { cls: 'mermaid-zoom-icon-btn mermaid-zoom-modal-close' });
+		setIcon(closeBtn, 'x');
+		closeBtn.setAttribute('aria-label', t('modal.close'));
+		closeBtn.title = t('modal.close');
+		controls.appendChild(closeBtn);
+
+		modal.appendChild(controls);
 		modal.appendChild(content);
 
 		// 注册模态框交互，收集清理函数以便关闭时移除
 		const modalCleanupFns: (() => void)[] = [];
-		modalCleanupFns.push(addWheelZoom(modalZoomContainer, modalContentWrapper, modalState));
+		modalCleanupFns.push(addWheelZoom(modalZoomContainer, modalContentWrapper, modalState, this.settings.zoomSensitivity));
 		modalCleanupFns.push(addDragPan(modalZoomContainer, modalContentWrapper, modalState));
-		modalCleanupFns.push(addTouchGestures(modalZoomContainer, modalContentWrapper, modalState));
+		modalCleanupFns.push(addTouchGestures(modalZoomContainer, modalContentWrapper, modalState, this.settings.zoomSensitivity));
 
 		// Hardware Back button (Android) closes the modal. The only way to
 		// intercept it is to push a history entry and treat the resulting
@@ -512,6 +452,12 @@ export default class MermaidZoomPlugin extends Plugin {
 		const handleKeydown = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') {
 				closeModal();
+			} else if (e.key === '+' || e.key === '=') {
+				zoom(modalContentWrapper, modalState, 1.2);
+			} else if (e.key === '-' || e.key === '_') {
+				zoom(modalContentWrapper, modalState, 0.8);
+			} else if (e.key === '0') {
+				this.fitToContainerModal(modalZoomContainer, modalContentWrapper, modalState);
 			}
 		};
 		document.addEventListener('keydown', handleKeydown);
@@ -522,9 +468,7 @@ export default class MermaidZoomPlugin extends Plugin {
 			window.addEventListener('popstate', popstateHandler);
 		}
 
-		// Close buttons (header ✕ and controls-bar ✕ share the same logic).
 		closeBtn.addEventListener('click', closeModal);
-		controlsCloseBtn.addEventListener('click', closeModal);
 
 		// Add the modal to the document.
 		document.body.appendChild(modal);
@@ -567,149 +511,25 @@ export default class MermaidZoomPlugin extends Plugin {
 		updateTransform(contentWrapper, state);
 	}
 
-	private createControls(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState): () => void {
+	private createControls(container: HTMLElement, state: ZoomState): () => void {
 		const controls = container.createDiv('mermaid-zoom-controls');
 		controls.style.cssText = `
 			position: absolute;
-			bottom: 10px;
+			bottom: 8px;
 			right: 10px;
 			display: flex;
-			flex-direction: column;
-			gap: 5px;
 			z-index: 100;
-			background: var(--background-secondary);
-			padding: 5px;
-			border-radius: 5px;
-			box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 		`;
 
-		// Split the controls across two rows so they fit on narrow (phone)
-		// screens. Top row = status (lock toggle + scale %); bottom row =
-		// actions (+/-/reset/export/fullscreen). A single row overflowed on
-		// small displays.
-		const topRow = controls.createDiv();
-		topRow.style.cssText = `
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: 8px;
-		`;
-
-		const bottomRow = controls.createDiv();
-		bottomRow.style.cssText = `
-			display: flex;
-			align-items: center;
-			gap: 5px;
-		`;
-
-		// Lock switch (on by default). Toggling it flips state.locked, which
-		// gates wheel/drag/touch in gestures.ts — when on (locked) the diagram
-		// is non-interactive and the page scrolls/touches through it; turn it
-		// off to enable zoom/pan/pinch. The +/-/reset buttons below always work.
-		const lockToggle = topRow.createDiv('mermaid-lock-toggle');
-		lockToggle.style.cssText = `
-			display: flex;
-			align-items: center;
-			gap: 6px;
-			padding: 0 8px 0 4px;
-		`;
-
-		const lockLabel = lockToggle.createSpan({
-			text: t('lock.label'),
-			cls: 'mermaid-lock-label'
-		});
-		lockLabel.style.cssText = `
-			font-size: 12px;
-			font-family: var(--font-ui-medium);
-			color: var(--text-muted);
-			white-space: nowrap;
-		`;
-
-		new ToggleComponent(lockToggle)
-			.setValue(state.locked)
-			.onChange((value) => {
-				state.locked = value;
-				contentWrapper.classList.toggle('locked', state.locked);
-			});
-		// Match the cursor class to the default locked state on first render.
-		contentWrapper.classList.toggle('locked', state.locked);
-
-		// Stop pointer/click events on the switch from bubbling into the
-		// container, where they would otherwise start a drag-pan.
-		const stopSwitchEvent = (e: Event) => e.stopPropagation();
-		lockToggle.addEventListener('mousedown', stopSwitchEvent);
-		lockToggle.addEventListener('click', stopSwitchEvent);
-
-		// Zoom in button
-		const zoomInBtn = bottomRow.createEl('button', {
-			text: '+',
-			cls: 'mermaid-zoom-btn'
-		});
-		this.styleButton(zoomInBtn);
-		zoomInBtn.addEventListener('click', (e) => {
-			e.stopPropagation();
-			zoom(contentWrapper, state, 1.2);
-		});
-
-		// Zoom out button
-		const zoomOutBtn = bottomRow.createEl('button', {
-			text: '-',
-			cls: 'mermaid-zoom-btn'
-		});
-		this.styleButton(zoomOutBtn);
-		zoomOutBtn.addEventListener('click', (e) => {
-			e.stopPropagation();
-			zoom(contentWrapper, state, 0.8);
-		});
-
-		// Reset button
-		const resetBtn = bottomRow.createEl('button', {
-			text: '⟲',
-			cls: 'mermaid-zoom-btn'
-		});
-		this.styleButton(resetBtn);
-		resetBtn.addEventListener('click', (e) => {
-			e.stopPropagation();
-			this.fitToContainer(state.container, contentWrapper, state.svg, state);
-		});
-
-		// Export PNG button
-		const exportBtn = bottomRow.createEl('button', {
-			text: '⤓',
-			cls: 'mermaid-zoom-btn'
-		});
-		exportBtn.title = t('export.buttonTitle');
-		this.styleButton(exportBtn);
-		exportBtn.addEventListener('click', (e) => {
-			e.stopPropagation();
-			void exportDiagramPng(this.app, state.svg, state.svgOriginalWidth, state.svgOriginalHeight, this.settings.exportDestination);
-		});
-
-		// Scale indicator
-		const scaleIndicator = topRow.createSpan({
-			cls: 'mermaid-zoom-scale'
-		});
-		scaleIndicator.style.cssText = `
-			padding: 4px 8px;
-			font-size: 12px;
-			font-family: var(--font-ui-medium);
-			color: var(--text-muted);
-			min-width: 45px;
-			text-align: center;
-		`;
-		state.scaleIndicator = scaleIndicator;
-		updateTransform(contentWrapper, state);
-
-		// Fullscreen toggle button
-		const fullscreenBtn = bottomRow.createEl('button', {
-			cls: 'mermaid-zoom-btn mermaid-fullscreen-btn'
+		const fullscreenBtn = controls.createEl('button', {
+			cls: 'mermaid-zoom-icon-btn mermaid-zoom-fullscreen-btn'
 		});
 
 		// Create SVG icon
 		const svgNS = 'http://www.w3.org/2000/svg';
 		const svg = document.createElementNS(svgNS, 'svg');
-		svg.setAttribute('width', '24');
-		svg.setAttribute('height', '24');
+		svg.setAttribute('width', '18');
+		svg.setAttribute('height', '18');
 		svg.setAttribute('viewBox', '0 0 16 16');
 		svg.setAttribute('fill', 'none');
 		svg.setAttribute('stroke', 'currentColor');
@@ -734,31 +554,15 @@ export default class MermaidZoomPlugin extends Plugin {
 		svg.appendChild(polyline4);
 
 		fullscreenBtn.appendChild(svg);
-		this.styleButton(fullscreenBtn);
 		fullscreenBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
 			this.openFullscreenModal(state);
 		});
 
-		// 添加调整大小手柄，并返回清理函数
-		return addResizeHandles(container, contentWrapper, state, () => this.fitToContainer(state.container, contentWrapper, state.svg, state));
-	}
-
-	private styleButton(btn: HTMLButtonElement) {
-		btn.addClass('mermaid-zoom-btn');
-		btn.style.cssText = `
-			width: 28px;
-			height: 28px;
-			border: none;
-			color: var(--text-normal);
-			border-radius: 4px;
-			cursor: pointer;
-			font-size: 16px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			transition: background 0.2s;
-		`;
+		return () => {
+			fullscreenBtn.remove();
+			controls.remove();
+		};
 	}
 
 	onunload() {
