@@ -24,11 +24,10 @@ There are no tests.
 
 ## Architecture
 
-- `main.ts` (~580 lines) — `MermaidZoomPlugin` (extends Obsidian `Plugin`): lifecycle, diagram detection (`MutationObserver` + `registerMarkdownCodeBlockProcessor`), fit/layout math, fullscreen modal, and controls UI. Inline diagrams are static (no gestures); the fullscreen modal owns all zoom/pan interaction and its control bar (zoom/reset/export/close).
-- `settings.ts` — `MermaidZoomSettings` interface, `DEFAULT_SETTINGS`, and `MermaidZoomSettingTab` (settings UI). Uses a type-only import of `MermaidZoomPlugin` from `main.ts` (no runtime cycle).
+- `main.ts` (~410 lines) — `MermaidZoomPlugin` (extends Obsidian `Plugin`): lifecycle, mermaid block detection (`MutationObserver` + workspace event sweeps), inline decoration (alignment/border classes + fullscreen button — the plugin never touches inline layout and never sets sizes), and the fullscreen modal (measures the cloned svg at open time; owns all zoom/pan interaction and its control bar).
+- `settings.ts` — `MermaidZoomSettings` interface, `DEFAULT_SETTINGS`, and `MermaidZoomSettingTab` (settings UI). Uses a type-only import of `MermaidZoomPlugin` from `main.ts` (no runtime cycle). Alignment/border changes call `decorateAllMermaidBlocks()` so open notes update immediately.
 - `gestures.ts` — `ZoomState` interface plus free functions `addWheelZoom` / `addDragPan` / `addTouchGestures` / `zoom` / `updateTransform`. Pure functions of `(container, contentWrapper, state)` with no `this`/settings dependency; only used by the fullscreen modal. `addWheelZoom`/`addTouchGestures` take an optional `sensitivity` multiplier (from the `zoomSensitivity` setting); wheel zoom scales exponentially with the actual `deltaY` magnitude so high-resolution devices (trackpad/Magic Mouse) don't feel hair-triggered.
-- Zoom state per diagram stored in `Map<HTMLElement, ZoomState>` (in `main.ts`)
-- Lifecycle: the gesture functions (in `gestures.ts`) each return a `() => void` cleanup function, registered via `this.register()` for automatic cleanup on plugin unload. Fullscreen modal manages its own cleanup in `closeModal`.
+- Lifecycle: gesture functions each return a `() => void` cleanup function, collected by the modal's `closeModal`. Inline decoration needs no cleanup — classes and the button live inside the native `.mermaid` block and die with it.
 - Build: esbuild → `main.js` (CommonJS), TypeScript strict mode (`noImplicitAny`, `strictNullChecks`)
 
 ## Release

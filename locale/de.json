@@ -1,6 +1,4 @@
 {
-  "setting.defaultZoom.name": "Standard-Zoomstufe",
-  "setting.defaultZoom.desc": "Anfänglicher Zoom-Prozentsatz bei der Darstellung eines Mermaid-Diagramms. 100 % passt in den Container; höhere Werte lassen Diagramme standardmäßig größer erscheinen.",
   "setting.zoomSensitivity.name": "Zoom-Empfindlichkeit",
   "setting.zoomSensitivity.desc": "Wie stark Mausrad-Scrollen und Pinch-Gesten zoomen. Niedrigere Werte fühlen sich sanfter an — probieren Sie 0.5x, wenn Zoomen per Trackpad oder Magic Mouse zu schnell ist. Wird beim nächsten Öffnen der Vollbildansicht wirksam.",
   "setting.containerBorder.name": "Container-Rahmen anzeigen",
@@ -10,9 +8,7 @@
   "setting.alignment.option.left": "Links",
   "setting.alignment.option.center": "Zentriert",
   "setting.alignment.option.right": "Rechts",
-  "setting.maxHeight.name": "Maximale Container-Höhe",
-  "setting.maxHeight.desc": "Maximale Höhe des Diagramm-Containers in Pixeln. Auf 0 setzen, um die Größe automatisch so anzupassen, dass das Diagramm bei der Standard-Zoomstufe vollständig sichtbar ist.",
-  "settings.note": "Änderungen gelten nur für neu dargestellte Diagramme. Laden Sie die Notiz neu, um die Auswirkungen auf vorhandene Diagramme zu sehen.",
+  "settings.note": "Darstellungseinstellungen (Ausrichtung, Rahmen) wirken sofort in geöffneten Notizen; die Zoom-Empfindlichkeit wird beim nächsten Öffnen der Vollbildansicht wirksam.",
   "modal.close": "Schließen",
   "modal.zoomIn": "Vergrößern",
   "modal.zoomOut": "Verkleinern",

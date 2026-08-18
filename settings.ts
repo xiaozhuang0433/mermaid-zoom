@@ -5,20 +5,16 @@ import { t } from './i18n';
 import type { ExportDestination } from './export';
 
 export interface MermaidZoomSettings {
-	defaultZoom: number; // percentage, e.g. 100 means 100%
 	zoomSensitivity: number; // multiplier on wheel/pinch zoom strength, 1 = default
 	showContainerBorder: boolean;
 	alignment: 'left' | 'center' | 'right';
-	maxHeight: number; // pixels, 0 = auto (fit content at current zoom)
 	exportDestination: ExportDestination; // 'vault' | 'download'
 }
 
 export const DEFAULT_SETTINGS: MermaidZoomSettings = {
-	defaultZoom: 100,
 	zoomSensitivity: 1,
 	showContainerBorder: false,
 	alignment: 'center',
-	maxHeight: 0,
 	exportDestination: 'vault',
 };
 
@@ -36,19 +32,6 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 	// older Obsidian versions.
 	getSettingDefinitions(): SettingDefinitionItem[] {
 		return [
-			{
-				name: t('setting.defaultZoom.name'),
-				desc: t('setting.defaultZoom.desc'),
-				control: {
-					type: 'slider',
-					key: 'defaultZoom',
-					min: 50,
-					max: 300,
-					step: 5,
-					defaultValue: 100,
-					displayFormat: (value) => `${value}%`,
-				},
-			},
 			{
 				name: t('setting.zoomSensitivity.name'),
 				desc: t('setting.zoomSensitivity.desc'),
@@ -86,18 +69,6 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 				},
 			},
 			{
-				name: t('setting.maxHeight.name'),
-				desc: t('setting.maxHeight.desc'),
-				control: {
-					type: 'number',
-					key: 'maxHeight',
-					defaultValue: 0,
-					placeholder: '0',
-					min: 0,
-					step: 1,
-				},
-			},
-			{
 				name: t('setting.exportDestination.name'),
 				desc: t('setting.exportDestination.desc'),
 				control: {
@@ -118,22 +89,16 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 	async setControlValue(key: string, value: unknown): Promise<void> {
 		(this.plugin.settings as unknown as Record<string, unknown>)[key] = value;
 		await this.plugin.saveSettings();
+		if (key === 'alignment' || key === 'showContainerBorder') {
+			// Appearance classes are baked onto each block at decoration time;
+			// re-sync them so open notes update immediately.
+			this.plugin.decorateAllMermaidBlocks();
+		}
 	}
 
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
-
-		new Setting(containerEl)
-			.setName(t('setting.defaultZoom.name'))
-			.setDesc(t('setting.defaultZoom.desc'))
-			.addSlider(slider => slider
-				.setLimits(50, 300, 5)
-				.setValue(this.plugin.settings.defaultZoom)
-				.onChange(async (value) => {
-					this.plugin.settings.defaultZoom = value;
-					await this.plugin.saveSettings();
-				}));
 
 		new Setting(containerEl)
 			.setName(t('setting.zoomSensitivity.name'))
@@ -154,6 +119,7 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.showContainerBorder = value;
 					await this.plugin.saveSettings();
+					this.plugin.decorateAllMermaidBlocks();
 				}));
 
 		new Setting(containerEl)
@@ -167,18 +133,7 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.alignment = value as 'left' | 'center' | 'right';
 					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.setName(t('setting.maxHeight.name'))
-			.setDesc(t('setting.maxHeight.desc'))
-			.addText(text => text
-				.setPlaceholder('0')
-				.setValue(this.plugin.settings.maxHeight > 0 ? String(this.plugin.settings.maxHeight) : '')
-				.onChange(async (value) => {
-					const num = parseInt(value, 10);
-					this.plugin.settings.maxHeight = isNaN(num) || num < 0 ? 0 : num;
-					await this.plugin.saveSettings();
+					this.plugin.decorateAllMermaidBlocks();
 				}));
 
 		new Setting(containerEl)

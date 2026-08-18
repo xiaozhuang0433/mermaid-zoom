@@ -1,6 +1,4 @@
 {
-  "setting.defaultZoom.name": "デフォルトのズームレベル",
-  "setting.defaultZoom.desc": "Mermaid 図がレンダリングされた際の初期ズーム倍率です。100% でコンテナに収まり、より大きな値にすると図が初期状態で大きく表示されます。",
   "setting.zoomSensitivity.name": "ズーム感度",
   "setting.zoomSensitivity.desc": "マウスホイールとピンチ操作によるズームの強さです。値を小さくするとより緩やかに動作します。トラックパッドや Magic Mouse でズームが速すぎる場合は 0.5x を試してください。図を全画面表示し直すと反映されます。",
   "setting.containerBorder.name": "コンテナの枠線を表示",
@@ -10,9 +8,7 @@
   "setting.alignment.option.left": "左",
   "setting.alignment.option.center": "中央",
   "setting.alignment.option.right": "右",
-  "setting.maxHeight.name": "コンテナの最大高さ",
-  "setting.maxHeight.desc": "図コンテナの最大高さ（ピクセル）。0 に設定すると、デフォルトのズーム倍率で図がすべて表示されるよう自動調整します。",
-  "settings.note": "変更は新しくレンダリングされた図にのみ適用されます。既存の図に反映させるにはノートを再読み込みしてください。",
+  "settings.note": "外観設定（配置・枠線）は開いているノートに即時反映されます。ズーム感度は図を全画面表示し直すと反映されます。",
   "modal.close": "閉じる",
   "modal.zoomIn": "拡大",
   "modal.zoomOut": "縮小",

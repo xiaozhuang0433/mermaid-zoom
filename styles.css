@@ -1,41 +1,65 @@
 /* Mermaid Zoom Plugin Styles */
 
-.mermaid-zoom-container svg,
-.mermaid-zoom-modal-wrapper svg {
-	display: block;
+/* Inline decoration — the plugin never touches layout. Obsidian's native
+   .mermaid rendering owns sizing and dark-mode inversion; we only add
+   appearance classes and a fullscreen trigger. */
+.mermaid-zoom-ready {
+	position: relative;
 }
 
-/* Keep stroke width constant under CSS zoom scaling.
-   Without this, fit-to-container (which scales the diagram down) makes
-   connector lines thin and faint. non-scaling-stroke renders strokes at a
-   fixed screen width regardless of the transform scale, so lines stay
-   crisp and visible at any zoom level. Applies to both inline and modal. */
-.mermaid-zoom-content svg *,
-.mermaid-zoom-modal-wrapper svg * {
-	vector-effect: non-scaling-stroke;
+.mermaid-zoom-align-left {
+	text-align: left;
 }
 
-/* Mermaid ships with a light "default" theme (dark text #333, light node
-   fills). In dark mode Obsidian makes native diagrams readable by applying an
-   invert filter; the zoom container doesn't inherit that, so the raw light
-   theme shows up as gray text/lines and wrong node colors on a dark backdrop.
-   Re-apply the same standard dark-mode invert here (inline + modal).
-   invert flips light<->dark, hue-rotate(180deg) keeps colors natural. */
-.theme-dark .mermaid-zoom-content svg,
-.theme-dark .mermaid-zoom-modal-wrapper svg {
-	filter: invert(1) hue-rotate(180deg);
+.mermaid-zoom-align-center {
+	text-align: center;
 }
 
-.mermaid-zoom-content {
-	cursor: default;
+.mermaid-zoom-align-right {
+	text-align: right;
 }
 
+.mermaid-zoom-bordered {
+	border: 1px dashed var(--background-modifier-border);
+	border-radius: 4px;
+}
+
+/* Fullscreen trigger floating at the block's bottom-right corner — kept
+   clear of Obsidian's own code-block action icons at the top-right. */
+.mermaid-zoom-ready .mermaid-zoom-fullscreen-btn {
+	position: absolute;
+	bottom: 8px;
+	right: 8px;
+	z-index: 100;
+}
+
+/* Fullscreen modal */
 .mermaid-zoom-modal-wrapper {
 	cursor: grab;
 }
 
 .mermaid-zoom-modal-wrapper.dragging {
 	cursor: grabbing;
+}
+
+.mermaid-zoom-modal-wrapper svg {
+	display: block;
+}
+
+/* Keep stroke width constant under zoom scaling. Without this, fit-to-view
+   (which scales the diagram down) makes connector lines thin and faint.
+   non-scaling-stroke renders strokes at a fixed screen width regardless of
+   the transform scale, so lines stay crisp at any zoom level. */
+.mermaid-zoom-modal-wrapper svg * {
+	vector-effect: non-scaling-stroke;
+}
+
+/* Mermaid ships with a light "default" theme (dark text, light node fills).
+   Native blocks get Obsidian's own dark-mode invert; the cloned svg inside
+   the modal does not, so re-apply the standard invert here. invert flips
+   light<->dark, hue-rotate(180deg) keeps colors natural. */
+.theme-dark .mermaid-zoom-modal-wrapper svg {
+	filter: invert(1) hue-rotate(180deg);
 }
 
 .mermaid-zoom-icon-btn {

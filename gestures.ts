@@ -88,9 +88,6 @@ export function addWheelZoom(container: HTMLElement, contentWrapper: HTMLElement
 }
 
 export function addDragPan(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState): () => void {
-	// 设置初始光标状态
-	contentWrapper.classList.add('mermaid-zoom-content');
-
 	container.addEventListener('mousedown', (e) => {
 		if (e.button === 0) { // 左键按下
 			state.isDragging = true;

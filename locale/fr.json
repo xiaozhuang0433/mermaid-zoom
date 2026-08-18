@@ -1,6 +1,4 @@
 {
-  "setting.defaultZoom.name": "Niveau de zoom par défaut",
-  "setting.defaultZoom.desc": "Pourcentage de zoom initial lors du rendu d'un diagramme Mermaid. 100 % s'ajuste au conteneur ; des valeurs plus élevées affichent les diagrammes plus grands par défaut.",
   "setting.zoomSensitivity.name": "Sensibilité du zoom",
   "setting.zoomSensitivity.desc": "Intensité du zoom à la molette de la souris et au pincement. Des valeurs plus faibles sont plus douces — essayez 0.5x si le zoom au trackpad ou à la Magic Mouse est trop rapide. Prend effet à la prochaine ouverture en plein écran.",
   "setting.containerBorder.name": "Afficher la bordure du conteneur",
@@ -10,9 +8,7 @@
   "setting.alignment.option.left": "Gauche",
   "setting.alignment.option.center": "Centre",
   "setting.alignment.option.right": "Droite",
-  "setting.maxHeight.name": "Hauteur maximale du conteneur",
-  "setting.maxHeight.desc": "Hauteur maximale en pixels du conteneur du diagramme. Définir sur 0 pour ajuster automatiquement afin que le diagramme soit entièrement visible au niveau de zoom par défaut.",
-  "settings.note": "Les modifications s'appliquent aux diagrammes nouvellement rendus. Rechargez la note pour voir l'effet sur les diagrammes existants.",
+  "settings.note": "Les réglages d'apparence (alignement, bordure) s'appliquent immédiatement aux notes ouvertes ; la sensibilité du zoom prend effet à la prochaine ouverture en plein écran.",
   "modal.close": "Fermer",
   "modal.zoomIn": "Zoomer",
   "modal.zoomOut": "Dézoomer",

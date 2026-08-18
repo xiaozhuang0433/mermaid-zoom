@@ -1,6 +1,4 @@
 {
-  "setting.defaultZoom.name": "默认缩放级别",
-  "setting.defaultZoom.desc": "Mermaid 图表渲染时的初始缩放百分比。100% 适配容器；调高可让图表默认显示得更大。",
   "setting.zoomSensitivity.name": "缩放灵敏度",
   "setting.zoomSensitivity.desc": "鼠标滚轮和双指捏合的缩放强度。数值越小手感越柔和——若触控板或妙控鼠标滚动缩放过快，可尝试 0.5x。重新打开全屏视图后生效。",
   "setting.containerBorder.name": "显示容器边框",
@@ -10,9 +8,7 @@
   "setting.alignment.option.left": "左对齐",
   "setting.alignment.option.center": "居中",
   "setting.alignment.option.right": "右对齐",
-  "setting.maxHeight.name": "最大容器高度",
-  "setting.maxHeight.desc": "图表容器的最大高度（像素）。设为 0 表示自动适配，使图表在默认缩放级别下完整可见。",
-  "settings.note": "更改仅对新渲染的图表生效。重新打开笔记即可看到对已有图表的影响。",
+  "settings.note": "外观设置（对齐、边框）立即作用于已打开的笔记；缩放灵敏度在全屏视图下次打开时生效。",
   "setting.exportDestination.name": "PNG 导出位置",
   "setting.exportDestination.desc": "导出的图表 PNG 图片保存到哪里。",
   "setting.exportDestination.option.vault": "仓库（附件目录）",
