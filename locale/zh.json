@@ -1,6 +1,8 @@
 {
   "setting.defaultZoom.name": "默认缩放级别",
   "setting.defaultZoom.desc": "Mermaid 图表渲染时的初始缩放百分比。100% 适配容器；调高可让图表默认显示得更大。",
+  "setting.zoomSensitivity.name": "缩放灵敏度",
+  "setting.zoomSensitivity.desc": "鼠标滚轮和双指捏合的缩放强度。数值越小手感越柔和——若触控板或妙控鼠标滚动缩放过快，可尝试 0.5x。重新打开全屏视图后生效。",
   "setting.containerBorder.name": "显示容器边框",
   "setting.containerBorder.desc": "在每个图表容器周围显示虚线边框，便于看清缩放区域的边界。",
   "setting.alignment.name": "默认对齐方式",

@@ -45,7 +45,7 @@ export function zoom(contentWrapper: HTMLElement, state: ZoomState, factor: numb
 	updateTransform(contentWrapper, state);
 }
 
-export function addWheelZoom(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState): () => void {
+export function addWheelZoom(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState, sensitivity = 1): () => void {
 	const wheelHandler = (e: WheelEvent) => {
 		e.preventDefault();
 
@@ -53,9 +53,23 @@ export function addWheelZoom(container: HTMLElement, contentWrapper: HTMLElement
 		const mouseX = e.clientX - rect.left;
 		const mouseY = e.clientY - rect.top;
 
-		const delta = e.deltaY > 0 ? 0.9 : 1.1;
+		// Normalize the delta to pixels: line-mode (deltaMode 1) deltas are
+		// line counts, page-mode (2) are page fractions.
+		let deltaPx = e.deltaY;
+		if (e.deltaMode === 1) deltaPx *= 33;
+		else if (e.deltaMode === 2) deltaPx *= 300;
+
+		// Clamp a single event to one notch (~100px) so coarse devices
+		// can't skip several zoom steps at once.
+		const clamped = Math.max(-100, Math.min(100, deltaPx));
+
+		// Scale the zoom step with the actual scroll amount: a full mouse
+		// notch (~100px) zooms ~11% (matching the old fixed step), while
+		// the tiny deltas from trackpads and Magic Mouse zoom ~0.5% each,
+		// so high-resolution devices no longer feel hair-triggered.
+		const factor = Math.exp((-clamped / 100) * 0.12 * sensitivity);
 		const oldScale = state.scale;
-		let newScale = oldScale * delta;
+		let newScale = oldScale * factor;
 		newScale = Math.max(state.minScale, Math.min(state.maxScale, newScale));
 
 		if (newScale !== oldScale) {
@@ -112,7 +126,7 @@ export function addDragPan(container: HTMLElement, contentWrapper: HTMLElement, 
 	};
 }
 
-export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState): () => void {
+export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState, sensitivity = 1): () => void {
 	let initialDistance = 0;
 	let initialScale = 1;
 	let initialTranslateX = 0;
@@ -160,7 +174,9 @@ export function addTouchGestures(container: HTMLElement, contentWrapper: HTMLEle
 			);
 
 			const scaleRatio = currentDistance / initialDistance;
-			let newScale = initialScale * scaleRatio;
+			// Sensitivity acts as an exponent on the finger-distance ratio:
+			// < 1 softens the pinch response, > 1 amplifies it.
+			let newScale = initialScale * Math.pow(scaleRatio, sensitivity);
 			newScale = Math.max(state.minScale, Math.min(state.maxScale, newScale));
 
 			const rect = container.getBoundingClientRect();

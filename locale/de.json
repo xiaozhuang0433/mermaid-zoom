@@ -1,6 +1,8 @@
 {
   "setting.defaultZoom.name": "Standard-Zoomstufe",
   "setting.defaultZoom.desc": "Anfänglicher Zoom-Prozentsatz bei der Darstellung eines Mermaid-Diagramms. 100 % passt in den Container; höhere Werte lassen Diagramme standardmäßig größer erscheinen.",
+  "setting.zoomSensitivity.name": "Zoom-Empfindlichkeit",
+  "setting.zoomSensitivity.desc": "Wie stark Mausrad-Scrollen und Pinch-Gesten zoomen. Niedrigere Werte fühlen sich sanfter an — probieren Sie 0.5x, wenn Zoomen per Trackpad oder Magic Mouse zu schnell ist. Wird beim nächsten Öffnen der Vollbildansicht wirksam.",
   "setting.containerBorder.name": "Container-Rahmen anzeigen",
   "setting.containerBorder.desc": "Zeigt einen gestrichelten Rahmen um jeden Diagramm-Container, um die Grenzen des Zoombereichs besser zu erkennen.",
   "setting.alignment.name": "Standardausrichtung",

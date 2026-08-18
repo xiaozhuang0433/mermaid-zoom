@@ -1,6 +1,8 @@
 {
   "setting.defaultZoom.name": "デフォルトのズームレベル",
   "setting.defaultZoom.desc": "Mermaid 図がレンダリングされた際の初期ズーム倍率です。100% でコンテナに収まり、より大きな値にすると図が初期状態で大きく表示されます。",
+  "setting.zoomSensitivity.name": "ズーム感度",
+  "setting.zoomSensitivity.desc": "マウスホイールとピンチ操作によるズームの強さです。値を小さくするとより緩やかに動作します。トラックパッドや Magic Mouse でズームが速すぎる場合は 0.5x を試してください。図を全画面表示し直すと反映されます。",
   "setting.containerBorder.name": "コンテナの枠線を表示",
   "setting.containerBorder.desc": "各図のコンテナ周囲に破線の枠を表示し、ズーム領域の境界を見やすくします。",
   "setting.alignment.name": "デフォルトの配置",

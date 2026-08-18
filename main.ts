@@ -416,9 +416,9 @@ export default class MermaidZoomPlugin extends Plugin {
 
 		// 注册模态框交互，收集清理函数以便关闭时移除
 		const modalCleanupFns: (() => void)[] = [];
-		modalCleanupFns.push(addWheelZoom(modalZoomContainer, modalContentWrapper, modalState));
+		modalCleanupFns.push(addWheelZoom(modalZoomContainer, modalContentWrapper, modalState, this.settings.zoomSensitivity));
 		modalCleanupFns.push(addDragPan(modalZoomContainer, modalContentWrapper, modalState));
-		modalCleanupFns.push(addTouchGestures(modalZoomContainer, modalContentWrapper, modalState));
+		modalCleanupFns.push(addTouchGestures(modalZoomContainer, modalContentWrapper, modalState, this.settings.zoomSensitivity));
 
 		// Hardware Back button (Android) closes the modal. The only way to
 		// intercept it is to push a history entry and treat the resulting

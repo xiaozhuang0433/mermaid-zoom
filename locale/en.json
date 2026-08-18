@@ -1,6 +1,8 @@
 {
   "setting.defaultZoom.name": "Default zoom level",
   "setting.defaultZoom.desc": "Initial zoom percentage when a Mermaid diagram is rendered. 100% fits the container; higher values make diagrams appear larger by default.",
+  "setting.zoomSensitivity.name": "Zoom sensitivity",
+  "setting.zoomSensitivity.desc": "How strongly mouse-wheel scrolling and pinch gestures zoom. Lower values feel gentler — try 0.5x if scrolling on a trackpad or Magic Mouse zooms too fast. Takes effect the next time a diagram is opened fullscreen.",
   "setting.containerBorder.name": "Show container border",
   "setting.containerBorder.desc": "Display a dashed border around each diagram container to help visualize the zoom area boundaries.",
   "setting.alignment.name": "Default alignment",

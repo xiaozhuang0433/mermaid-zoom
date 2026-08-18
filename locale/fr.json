@@ -1,6 +1,8 @@
 {
   "setting.defaultZoom.name": "Niveau de zoom par défaut",
   "setting.defaultZoom.desc": "Pourcentage de zoom initial lors du rendu d'un diagramme Mermaid. 100 % s'ajuste au conteneur ; des valeurs plus élevées affichent les diagrammes plus grands par défaut.",
+  "setting.zoomSensitivity.name": "Sensibilité du zoom",
+  "setting.zoomSensitivity.desc": "Intensité du zoom à la molette de la souris et au pincement. Des valeurs plus faibles sont plus douces — essayez 0.5x si le zoom au trackpad ou à la Magic Mouse est trop rapide. Prend effet à la prochaine ouverture en plein écran.",
   "setting.containerBorder.name": "Afficher la bordure du conteneur",
   "setting.containerBorder.desc": "Affiche une bordure en pointillés autour de chaque conteneur de diagramme pour mieux visualiser les limites de la zone de zoom.",
   "setting.alignment.name": "Alignement par défaut",
