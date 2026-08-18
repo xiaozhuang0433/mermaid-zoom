@@ -1,6 +1,4 @@
 {
-  "setting.defaultZoom.name": "Default zoom level",
-  "setting.defaultZoom.desc": "Initial zoom percentage when a Mermaid diagram is rendered. 100% fits the container; higher values make diagrams appear larger by default.",
   "setting.zoomSensitivity.name": "Zoom sensitivity",
   "setting.zoomSensitivity.desc": "How strongly mouse-wheel scrolling and pinch gestures zoom. Lower values feel gentler — try 0.5x if scrolling on a trackpad or Magic Mouse zooms too fast. Takes effect the next time a diagram is opened fullscreen.",
   "setting.containerBorder.name": "Show container border",
@@ -10,9 +8,7 @@
   "setting.alignment.option.left": "Left",
   "setting.alignment.option.center": "Center",
   "setting.alignment.option.right": "Right",
-  "setting.maxHeight.name": "Max container height",
-  "setting.maxHeight.desc": "Maximum height in pixels for the diagram container. Set to 0 to auto-size so the diagram is fully visible at the default zoom level.",
-  "settings.note": "Changes apply to newly rendered diagrams. Reload the note to see the effect on existing diagrams.",
+  "settings.note": "Appearance settings (alignment, border) apply to open notes immediately; zoom sensitivity takes effect the next time a diagram is opened fullscreen.",
   "setting.exportDestination.name": "PNG export destination",
   "setting.exportDestination.desc": "Where exported PNG images of diagrams are saved.",
   "setting.exportDestination.option.vault": "Vault (attachments folder)",
