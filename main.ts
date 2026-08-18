@@ -85,28 +85,31 @@ export default class MermaidZoomPlugin extends Plugin {
 		}
 	}
 
-	/** Decorate every mermaid block in the document; already-decorated blocks
-	 * get their appearance classes re-synced (used after settings change). */
+	/** Decorate every mermaid block in the document; also re-syncs appearance
+	 * classes (used after settings change). */
 	decorateAllMermaidBlocks() {
 		const blocks = document.querySelectorAll<HTMLElement>('.mermaid');
 		for (const block of Array.from(blocks)) {
-			this.decorateMermaidBlock(block, true);
+			this.decorateMermaidBlock(block);
 		}
 	}
 
-	private decorateMermaidBlock(block: HTMLElement, resync = false) {
+	// Appearance classes are re-applied on every visit — the operation is
+	// idempotent, and it keeps re-attached blocks in sync: live preview
+	// detaches far embeds and re-attaches the SAME cached node when you
+	// scroll back, so a node that missed a settings change must catch up the
+	// moment it reappears. The mermaid-zoom-ready marker only guards the
+	// one-time button insert.
+	private decorateMermaidBlock(block: HTMLElement) {
 		// Skip blocks whose svg hasn't rendered yet (e.g. syntax-error blocks
 		// never get one) — the MutationObserver re-visits when it appears.
 		if (!block.querySelector('svg')) return;
-		const decorated = block.hasClass('mermaid-zoom-ready');
-		if (decorated && !resync) return;
 
-		// Appearance classes always follow the current settings.
 		block.removeClass('mermaid-zoom-align-left', 'mermaid-zoom-align-center', 'mermaid-zoom-align-right');
 		block.addClass(`mermaid-zoom-align-${this.settings.alignment}`);
 		block.toggleClass('mermaid-zoom-bordered', this.settings.showContainerBorder);
 
-		if (!decorated) {
+		if (!block.hasClass('mermaid-zoom-ready')) {
 			block.addClass('mermaid-zoom-ready');
 			this.addFullscreenButton(block);
 		}
