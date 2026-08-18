@@ -26,57 +26,16 @@
 	filter: invert(1) hue-rotate(180deg);
 }
 
-/* Container cursor states */
 .mermaid-zoom-content {
-	cursor: grab;
-}
-
-.mermaid-zoom-content.dragging {
-	cursor: grabbing;
-}
-
-/* Locked diagrams aren't draggable — drop the misleading grab cursor.
-   Compound selector beats .mermaid-zoom-content so this wins while keeping
-   the base class's SVG styling (non-scaling-stroke, dark-mode invert). */
-.mermaid-zoom-content.locked {
 	cursor: default;
 }
 
-/* Resizing cursor states. Applied to body AND all descendants so the cursor
-   stays locked during a resize drag, overriding per-element cursors (e.g. the
-   grab cursor on .mermaid-zoom-content) via higher specificity. */
-body.mermaid-zoom-resizing-nwse,
-body.mermaid-zoom-resizing-nwse * {
-	cursor: nwse-resize;
-	user-select: none;
+.mermaid-zoom-modal-wrapper {
+	cursor: grab;
 }
 
-body.mermaid-zoom-resizing-nesw,
-body.mermaid-zoom-resizing-nesw * {
-	cursor: nesw-resize;
-	user-select: none;
-}
-
-body.mermaid-zoom-resizing-ns,
-body.mermaid-zoom-resizing-ns * {
-	cursor: ns-resize;
-	user-select: none;
-}
-
-body.mermaid-zoom-resizing-ew,
-body.mermaid-zoom-resizing-ew * {
-	cursor: ew-resize;
-	user-select: none;
-}
-
-/* Modal close button. Background lives in CSS (not inline) so :hover can
-   override it through the normal cascade. */
-.mermaid-zoom-modal-close {
-	background: var(--interactive-normal);
-}
-
-.mermaid-zoom-modal-close:hover {
-	background: var(--interactive-hover);
+.mermaid-zoom-modal-wrapper.dragging {
+	cursor: grabbing;
 }
 
 /* Zoom buttons — same reason: background declared here, not as an inline style. */
@@ -88,15 +47,24 @@ body.mermaid-zoom-resizing-ew * {
 	background: var(--interactive-hover);
 }
 
-/* Fullscreen button padding (compound selector raises specificity above
-   Obsidian's generic button reset). */
-.mermaid-zoom-btn.mermaid-fullscreen-btn {
-	padding: 6px;
+.mermaid-zoom-icon-btn {
+	width: 26px;
+	height: 26px;
+	padding: 4px;
+	border: none;
+	border-radius: 6px;
+	background: transparent;
+	color: var(--text-muted);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0.72;
 }
 
-/* Close button in the modal controls bar. Compound selector keeps specificity
-   above .mermaid-zoom-btn:hover so the red tint wins, reading as a
-   destructive/dismiss affordance that stands out from the zoom controls. */
-.mermaid-zoom-btn.mermaid-modal-close-btn:hover {
-	background: var(--background-modifier-error);
+.mermaid-zoom-icon-btn:hover,
+.mermaid-zoom-icon-btn:active {
+	background: rgba(0, 0, 0, 0.06);
+	color: var(--text-normal);
+	opacity: 1;
 }
