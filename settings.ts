@@ -6,6 +6,7 @@ import type { ExportDestination } from './export';
 
 export interface MermaidZoomSettings {
 	zoomSensitivity: number; // multiplier on wheel/pinch zoom strength, 1 = default
+	showInlineZoomButtons: boolean;
 	showContainerBorder: boolean;
 	alignment: 'left' | 'center' | 'right';
 	exportDestination: ExportDestination; // 'vault' | 'download'
@@ -13,6 +14,7 @@ export interface MermaidZoomSettings {
 
 export const DEFAULT_SETTINGS: MermaidZoomSettings = {
 	zoomSensitivity: 1,
+	showInlineZoomButtons: true,
 	showContainerBorder: false,
 	alignment: 'center',
 	exportDestination: 'vault',
@@ -43,6 +45,15 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 					step: 0.1,
 					defaultValue: 1,
 					displayFormat: (value) => `${value}x`,
+				},
+			},
+			{
+				name: t('setting.inlineZoomButtons.name'),
+				desc: t('setting.inlineZoomButtons.desc'),
+				control: {
+					type: 'toggle',
+					key: 'showInlineZoomButtons',
+					defaultValue: true,
 				},
 			},
 			{
@@ -89,7 +100,7 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 	async setControlValue(key: string, value: unknown): Promise<void> {
 		(this.plugin.settings as unknown as Record<string, unknown>)[key] = value;
 		await this.plugin.saveSettings();
-		if (key === 'alignment' || key === 'showContainerBorder') {
+		if (key === 'alignment' || key === 'showContainerBorder' || key === 'showInlineZoomButtons') {
 			// Appearance classes are baked onto each block at decoration time;
 			// re-sync them so open notes update immediately.
 			this.plugin.decorateAllMermaidBlocks();
@@ -109,6 +120,17 @@ export class MermaidZoomSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.zoomSensitivity = value;
 					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName(t('setting.inlineZoomButtons.name'))
+			.setDesc(t('setting.inlineZoomButtons.desc'))
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showInlineZoomButtons)
+				.onChange(async (value) => {
+					this.plugin.settings.showInlineZoomButtons = value;
+					await this.plugin.saveSettings();
+					this.plugin.decorateAllMermaidBlocks();
 				}));
 
 		new Setting(containerEl)

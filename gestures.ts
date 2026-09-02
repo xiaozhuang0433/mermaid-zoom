@@ -45,6 +45,29 @@ export function zoom(contentWrapper: HTMLElement, state: ZoomState, factor: numb
 	updateTransform(contentWrapper, state);
 }
 
+/** Convert a wheel event into a multiplicative zoom factor: normalize
+ *  deltaMode (line/page) to pixels, clamp a single event to one notch
+ *  (~100px), and scale exponentially so trackpads and Magic Mouse aren't
+ *  hair-triggered. A full notch zooms ~11% (×0.88/×1.13) at sensitivity 1.
+ *  Shared by the fullscreen modal and inline zoom (inlineZoom.ts). */
+export function wheelZoomFactor(e: WheelEvent, sensitivity = 1): number {
+	// Normalize the delta to pixels: line-mode (deltaMode 1) deltas are
+	// line counts, page-mode (2) are page fractions.
+	let deltaPx = e.deltaY;
+	if (e.deltaMode === 1) deltaPx *= 33;
+	else if (e.deltaMode === 2) deltaPx *= 300;
+
+	// Clamp a single event to one notch (~100px) so coarse devices
+	// can't skip several zoom steps at once.
+	const clamped = Math.max(-100, Math.min(100, deltaPx));
+
+	// Scale the zoom step with the actual scroll amount: a full mouse
+	// notch (~100px) zooms ~11% (matching the old fixed step), while
+	// the tiny deltas from trackpads and Magic Mouse zoom ~0.5% each,
+	// so high-resolution devices no longer feel hair-triggered.
+	return Math.exp((-clamped / 100) * 0.12 * sensitivity);
+}
+
 export function addWheelZoom(container: HTMLElement, contentWrapper: HTMLElement, state: ZoomState, sensitivity = 1): () => void {
 	const wheelHandler = (e: WheelEvent) => {
 		e.preventDefault();
@@ -53,21 +76,7 @@ export function addWheelZoom(container: HTMLElement, contentWrapper: HTMLElement
 		const mouseX = e.clientX - rect.left;
 		const mouseY = e.clientY - rect.top;
 
-		// Normalize the delta to pixels: line-mode (deltaMode 1) deltas are
-		// line counts, page-mode (2) are page fractions.
-		let deltaPx = e.deltaY;
-		if (e.deltaMode === 1) deltaPx *= 33;
-		else if (e.deltaMode === 2) deltaPx *= 300;
-
-		// Clamp a single event to one notch (~100px) so coarse devices
-		// can't skip several zoom steps at once.
-		const clamped = Math.max(-100, Math.min(100, deltaPx));
-
-		// Scale the zoom step with the actual scroll amount: a full mouse
-		// notch (~100px) zooms ~11% (matching the old fixed step), while
-		// the tiny deltas from trackpads and Magic Mouse zoom ~0.5% each,
-		// so high-resolution devices no longer feel hair-triggered.
-		const factor = Math.exp((-clamped / 100) * 0.12 * sensitivity);
+		const factor = wheelZoomFactor(e, sensitivity);
 		const oldScale = state.scale;
 		let newScale = oldScale * factor;
 		newScale = Math.max(state.minScale, Math.min(state.maxScale, newScale));

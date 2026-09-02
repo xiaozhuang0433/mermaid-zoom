@@ -1,6 +1,7 @@
 import { Platform, Plugin, setIcon } from 'obsidian';
 import { MermaidZoomSettings, DEFAULT_SETTINGS, MermaidZoomSettingTab } from './settings';
 import { ZoomState, updateTransform, zoom, addWheelZoom, addDragPan, addTouchGestures } from './gestures';
+import { syncInlineZoom, teardownInlineZoom } from './inlineZoom';
 import { t } from './i18n';
 import { exportDiagramPng } from './export';
 
@@ -69,7 +70,11 @@ export default class MermaidZoomPlugin extends Plugin {
 
 	// Obsidian structure: <div class="mermaid"><svg id="mermaid-xxx">...</svg></div>.
 	// A bare .mermaid div may be added before its svg renders, and a rendered
-	// svg may be injected into an existing div — catch both shapes.
+	// svg may be injected into an existing div — catch both shapes. A
+	// RE-RENDERED svg swapped inside an already-decorated block arrives as
+	// the added node itself, sitting inside the .mermaid div — only
+	// closest() finds that host (inline zoom must re-apply the stored scale
+	// to the replacement svg promptly, not on the next workspace sweep).
 	private decorateMermaidBlocksIn(root: HTMLElement) {
 		const blocks = Array.from(root.querySelectorAll<HTMLElement>('.mermaid'));
 		if (root.classList.contains('mermaid')) {
@@ -79,6 +84,8 @@ export default class MermaidZoomPlugin extends Plugin {
 				const host = svg.closest('.mermaid');
 				if (host) blocks.push(host as HTMLElement);
 			}
+			const host = root.closest('.mermaid');
+			if (host) blocks.push(host as HTMLElement);
 		}
 		for (const block of blocks) {
 			this.decorateMermaidBlock(block);
@@ -98,8 +105,9 @@ export default class MermaidZoomPlugin extends Plugin {
 	// idempotent, and it keeps re-attached blocks in sync: live preview
 	// detaches far embeds and re-attaches the SAME cached node when you
 	// scroll back, so a node that missed a settings change must catch up the
-	// moment it reappears. The mermaid-zoom-ready marker only guards the
-	// one-time button insert.
+	// moment it reappears. mermaid-zoom-ready anchors the control cluster
+	// (position: relative) and marks blocks for unload cleanup; the cluster
+	// itself is kept in sync by the idempotent syncInlineZoom.
 	private decorateMermaidBlock(block: HTMLElement) {
 		// Skip blocks whose svg hasn't rendered yet (e.g. syntax-error blocks
 		// never get one) — the MutationObserver re-visits when it appears.
@@ -108,58 +116,20 @@ export default class MermaidZoomPlugin extends Plugin {
 		block.removeClass('mermaid-zoom-align-left', 'mermaid-zoom-align-center', 'mermaid-zoom-align-right');
 		block.addClass(`mermaid-zoom-align-${this.settings.alignment}`);
 		block.toggleClass('mermaid-zoom-bordered', this.settings.showContainerBorder);
+		block.addClass('mermaid-zoom-ready');
 
-		if (!block.hasClass('mermaid-zoom-ready')) {
-			block.addClass('mermaid-zoom-ready');
-			this.addFullscreenButton(block);
-		}
-	}
-
-	private addFullscreenButton(block: HTMLElement) {
-		const fullscreenBtn = block.createEl('button', {
-			cls: 'mermaid-zoom-icon-btn mermaid-zoom-fullscreen-btn'
+		syncInlineZoom(block, {
+			onFullscreen: (b) => {
+				// Resolve the svg at click time: live preview may re-render the
+				// diagram, replacing the node captured at decoration time.
+				const currentSvg = b.querySelector('svg');
+				if (currentSvg) {
+					this.openFullscreenModal(currentSvg);
+				}
+			},
+			getSensitivity: () => this.settings.zoomSensitivity,
+			showZoomButtons: this.settings.showInlineZoomButtons,
 		});
-
-		// Create SVG icon
-		const svgNS = 'http://www.w3.org/2000/svg';
-		const svg = document.createElementNS(svgNS, 'svg');
-		svg.setAttribute('width', '18');
-		svg.setAttribute('height', '18');
-		svg.setAttribute('viewBox', '0 0 16 16');
-		svg.setAttribute('fill', 'none');
-		svg.setAttribute('stroke', 'currentColor');
-		svg.setAttribute('stroke-width', '1');
-		svg.setAttribute('stroke-linecap', 'round');
-		svg.setAttribute('stroke-linejoin', 'round');
-
-		const polyline1 = document.createElementNS(svgNS, 'polyline');
-		polyline1.setAttribute('points', '1,10 1,15 6,15');
-		svg.appendChild(polyline1);
-
-		const polyline2 = document.createElementNS(svgNS, 'polyline');
-		polyline2.setAttribute('points', '15,10 15,15 10,15');
-		svg.appendChild(polyline2);
-
-		const polyline3 = document.createElementNS(svgNS, 'polyline');
-		polyline3.setAttribute('points', '1,6 1,1 6,1');
-		svg.appendChild(polyline3);
-
-		const polyline4 = document.createElementNS(svgNS, 'polyline');
-		polyline4.setAttribute('points', '15,6 15,1 10,1');
-		svg.appendChild(polyline4);
-
-		fullscreenBtn.appendChild(svg);
-		fullscreenBtn.addEventListener('click', (e) => {
-			e.stopPropagation();
-			// Resolve the svg at click time: live preview may re-render the
-			// diagram, replacing the node captured at decoration time.
-			const currentSvg = block.querySelector('svg');
-			if (currentSvg) {
-				this.openFullscreenModal(currentSvg);
-			}
-		});
-		// No cleanup registration needed: the button lives inside the .mermaid
-		// block and dies with it (live preview unrender removes the whole block).
 	}
 
 	private openFullscreenModal(sourceSvg: SVGSVGElement) {
@@ -213,6 +183,20 @@ export default class MermaidZoomPlugin extends Plugin {
 
 		// Clone the SVG
 		const svgClone = sourceSvg.cloneNode(true) as SVGSVGElement;
+
+		// Normalize any inline zoom off the clone: an inline-zoomed source
+		// carries our width/height styles, which would fight the modal's
+		// transform math and leak into PNG export (which clones this clone).
+		// Restoring the natural max-width from the viewBox mirrors mermaid's
+		// own useMaxWidth output — a no-op for unzoomed diagrams.
+		const viewBoxBase = svgClone.viewBox?.baseVal;
+		if (viewBoxBase && viewBoxBase.width > 0) {
+			svgClone.style.removeProperty('width');
+			svgClone.style.removeProperty('height');
+			const naturalMaxWidth = `${viewBoxBase.width}px`;
+			svgClone.style.maxWidth = naturalMaxWidth;
+		}
+
 		modalContentWrapper.appendChild(svgClone);
 		modalZoomContainer.appendChild(modalContentWrapper);
 		content.appendChild(modalZoomContainer);
@@ -406,8 +390,14 @@ export default class MermaidZoomPlugin extends Plugin {
 		// Strip decoration so a reloaded plugin starts clean.
 		const decorated = document.querySelectorAll('.mermaid-zoom-ready');
 		for (const block of Array.from(decorated) as HTMLElement[]) {
+			teardownInlineZoom(block);
 			block.removeClass('mermaid-zoom-ready', 'mermaid-zoom-bordered',
 				'mermaid-zoom-align-left', 'mermaid-zoom-align-center', 'mermaid-zoom-align-right');
+			for (const cluster of Array.from(block.querySelectorAll('.mermaid-zoom-inline-controls'))) {
+				cluster.remove();
+			}
+			// Legacy pre-cluster standalone buttons (kept one release for
+			// blocks decorated by an older build).
 			for (const btn of Array.from(block.querySelectorAll('.mermaid-zoom-fullscreen-btn'))) {
 				btn.remove();
 			}

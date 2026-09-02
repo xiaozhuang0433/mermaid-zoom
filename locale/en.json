@@ -1,6 +1,8 @@
 {
   "setting.zoomSensitivity.name": "Zoom sensitivity",
-  "setting.zoomSensitivity.desc": "How strongly mouse-wheel scrolling and pinch gestures zoom. Lower values feel gentler — try 0.5x if scrolling on a trackpad or Magic Mouse zooms too fast. Takes effect the next time a diagram is opened fullscreen.",
+  "setting.zoomSensitivity.desc": "How strongly mouse-wheel scrolling and pinch gestures zoom. Lower values feel gentler — try 0.5x if scrolling on a trackpad or Magic Mouse zooms too fast. Inline zoom picks it up immediately; the fullscreen view the next time it opens.",
+  "setting.inlineZoomButtons.name": "Show inline zoom buttons",
+  "setting.inlineZoomButtons.desc": "Show zoom in / zoom out / reset / lock buttons on each diagram. The fullscreen button is always shown. While locked, the page scrolls through diagrams normally; unlock to zoom with the mouse wheel, dragging, or pinching.",
   "setting.containerBorder.name": "Show container border",
   "setting.containerBorder.desc": "Display a dashed border around each diagram container to help visualize the zoom area boundaries.",
   "setting.alignment.name": "Default alignment",
@@ -8,7 +10,7 @@
   "setting.alignment.option.left": "Left",
   "setting.alignment.option.center": "Center",
   "setting.alignment.option.right": "Right",
-  "settings.note": "Appearance settings (alignment, border) apply to open notes immediately; zoom sensitivity takes effect the next time a diagram is opened fullscreen.",
+  "settings.note": "Appearance settings apply to open notes immediately; inline zoom sensitivity applies immediately, and the fullscreen view picks it up the next time it opens.",
   "setting.exportDestination.name": "PNG export destination",
   "setting.exportDestination.desc": "Where exported PNG images of diagrams are saved.",
   "setting.exportDestination.option.vault": "Vault (attachments folder)",
@@ -20,5 +22,8 @@
   "modal.close": "Close",
   "modal.zoomIn": "Zoom in",
   "modal.zoomOut": "Zoom out",
-  "modal.reset": "Reset zoom"
+  "modal.reset": "Reset zoom",
+  "inline.unlock": "Unlock gestures (wheel zoom, drag, pinch)",
+  "inline.lock": "Lock gestures (page scrolls normally)",
+  "inline.fullscreen": "Open fullscreen view"
 }

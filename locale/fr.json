@@ -1,6 +1,8 @@
 {
   "setting.zoomSensitivity.name": "Sensibilité du zoom",
-  "setting.zoomSensitivity.desc": "Intensité du zoom à la molette de la souris et au pincement. Des valeurs plus faibles sont plus douces — essayez 0.5x si le zoom au trackpad ou à la Magic Mouse est trop rapide. Prend effet à la prochaine ouverture en plein écran.",
+  "setting.zoomSensitivity.desc": "Intensité du zoom à la molette de la souris et au pincement. Des valeurs plus faibles sont plus douces — essayez 0.5x si le zoom au trackpad ou à la Magic Mouse est trop rapide. Le zoom intégré le prend en compte immédiatement ; la vue plein écran à la prochaine ouverture.",
+  "setting.inlineZoomButtons.name": "Afficher les boutons de zoom intégrés",
+  "setting.inlineZoomButtons.desc": "Affiche sur chaque diagramme les boutons zoom avant, zoom arrière, réinitialisation et verrouillage. Le bouton plein écran reste toujours visible. Verrouillé, la page défile normalement sur les diagrammes ; déverrouillé, zoomez à la molette, en glissant ou en pinçant.",
   "setting.containerBorder.name": "Afficher la bordure du conteneur",
   "setting.containerBorder.desc": "Affiche une bordure en pointillés autour de chaque conteneur de diagramme pour mieux visualiser les limites de la zone de zoom.",
   "setting.alignment.name": "Alignement par défaut",
@@ -8,9 +10,12 @@
   "setting.alignment.option.left": "Gauche",
   "setting.alignment.option.center": "Centre",
   "setting.alignment.option.right": "Droite",
-  "settings.note": "Les réglages d'apparence (alignement, bordure) s'appliquent immédiatement aux notes ouvertes ; la sensibilité du zoom prend effet à la prochaine ouverture en plein écran.",
+  "settings.note": "Les réglages d'apparence s'appliquent immédiatement aux notes ouvertes ; la sensibilité du zoom intégré s'applique aussitôt, et la vue plein écran la prend en compte à la prochaine ouverture.",
   "modal.close": "Fermer",
   "modal.zoomIn": "Zoomer",
   "modal.zoomOut": "Dézoomer",
-  "modal.reset": "Réinitialiser le zoom"
+  "modal.reset": "Réinitialiser le zoom",
+  "inline.unlock": "Déverrouiller les gestes (molette, glisser, pincer)",
+  "inline.lock": "Verrouiller les gestes (la page défile normalement)",
+  "inline.fullscreen": "Ouvrir en plein écran"
 }

@@ -1,6 +1,8 @@
 {
   "setting.zoomSensitivity.name": "ズーム感度",
-  "setting.zoomSensitivity.desc": "マウスホイールとピンチ操作によるズームの強さです。値を小さくするとより緩やかに動作します。トラックパッドや Magic Mouse でズームが速すぎる場合は 0.5x を試してください。図を全画面表示し直すと反映されます。",
+  "setting.zoomSensitivity.desc": "マウスホイールとピンチ操作によるズームの強さです。値を小さくするとより緩やかに動作します。トラックパッドや Magic Mouse でズームが速すぎる場合は 0.5x を試してください。インラインズームはすぐに反映され、全画面表示は次回開いたときに反映されます。",
+  "setting.inlineZoomButtons.name": "インラインズームボタンを表示",
+  "setting.inlineZoomButtons.desc": "各図にズームイン・ズームアウト・リセット・ロックボタンを表示します。全画面ボタンは常に表示されます。ロック中はページが通常どおりスクロールし、ロック解除するとホイール・ドラッグ・ピンチでズームできます。",
   "setting.containerBorder.name": "コンテナの枠線を表示",
   "setting.containerBorder.desc": "各図のコンテナ周囲に破線の枠を表示し、ズーム領域の境界を見やすくします。",
   "setting.alignment.name": "デフォルトの配置",
@@ -8,9 +10,12 @@
   "setting.alignment.option.left": "左",
   "setting.alignment.option.center": "中央",
   "setting.alignment.option.right": "右",
-  "settings.note": "外観設定（配置・枠線）は開いているノートに即時反映されます。ズーム感度は図を全画面表示し直すと反映されます。",
+  "settings.note": "外観設定は開いているノートに即時反映されます。インラインズームの感度はすぐに、全画面表示は次回開いたときに反映されます。",
   "modal.close": "閉じる",
   "modal.zoomIn": "拡大",
   "modal.zoomOut": "縮小",
-  "modal.reset": "ズームをリセット"
+  "modal.reset": "ズームをリセット",
+  "inline.unlock": "ジェスチャーのロックを解除（ホイールズーム・ドラッグ・ピンチ）",
+  "inline.lock": "ジェスチャーをロック（ページは通常どおりスクロール）",
+  "inline.fullscreen": "全画面表示で開く"
 }
