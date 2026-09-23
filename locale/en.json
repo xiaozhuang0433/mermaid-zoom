@@ -2,7 +2,7 @@
   "setting.zoomSensitivity.name": "Zoom sensitivity",
   "setting.zoomSensitivity.desc": "How strongly mouse-wheel scrolling and pinch gestures zoom. Lower values feel gentler — try 0.5x if scrolling on a trackpad or Magic Mouse zooms too fast. Inline zoom picks it up immediately; the fullscreen view the next time it opens.",
   "setting.inlineZoomButtons.name": "Show inline zoom buttons",
-  "setting.inlineZoomButtons.desc": "Show zoom in / zoom out / reset / lock buttons on each diagram. The fullscreen button is always shown. While locked, the page scrolls through diagrams normally; unlock to zoom with the mouse wheel, dragging, or pinching.",
+  "setting.inlineZoomButtons.desc": "Show zoom in / zoom out / fit width / reset / lock buttons on each diagram. The fullscreen button is always shown. While locked, the page scrolls through diagrams normally; unlock to zoom with the mouse wheel, dragging, or pinching.",
   "setting.containerBorder.name": "Show container border",
   "setting.containerBorder.desc": "Display a dashed border around each diagram container to help visualize the zoom area boundaries.",
   "setting.alignment.name": "Default alignment",
@@ -25,5 +25,6 @@
   "modal.reset": "Reset zoom",
   "inline.unlock": "Unlock gestures (wheel zoom, drag, pinch)",
   "inline.lock": "Lock gestures (page scrolls normally)",
+  "inline.fitWidth": "Fit to width",
   "inline.fullscreen": "Open fullscreen view"
 }

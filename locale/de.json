@@ -2,7 +2,7 @@
   "setting.zoomSensitivity.name": "Zoom-Empfindlichkeit",
   "setting.zoomSensitivity.desc": "Wie stark Mausrad-Scrollen und Pinch-Gesten zoomen. Niedrigere Werte fühlen sich sanfter an — probieren Sie 0.5x, wenn Zoomen per Trackpad oder Magic Mouse zu schnell ist. Der Inline-Zoom übernimmt sie sofort, die Vollbildansicht beim nächsten Öffnen.",
   "setting.inlineZoomButtons.name": "Inline-Zoom-Schaltflächen anzeigen",
-  "setting.inlineZoomButtons.desc": "Zeigt auf jedem Diagramm Schaltflächen zum Vergrößern, Verkleinern, Zurücksetzen und Sperren. Die Vollbild-Schaltfläche ist immer sichtbar. Im gesperrten Zustand scrollt die Seite normal über Diagramme hinweg; nach dem Entsperren zoomen Sie mit Mausrad, Ziehen oder Pinch.",
+  "setting.inlineZoomButtons.desc": "Zeigt auf jedem Diagramm Schaltflächen zum Vergrößern, Verkleinern, Anpassen an die Breite, Zurücksetzen und Sperren. Die Vollbild-Schaltfläche ist immer sichtbar. Im gesperrten Zustand scrollt die Seite normal über Diagramme hinweg; nach dem Entsperren zoomen Sie mit Mausrad, Ziehen oder Pinch.",
   "setting.containerBorder.name": "Container-Rahmen anzeigen",
   "setting.containerBorder.desc": "Zeigt einen gestrichelten Rahmen um jeden Diagramm-Container, um die Grenzen des Zoombereichs besser zu erkennen.",
   "setting.alignment.name": "Standardausrichtung",
@@ -17,5 +17,6 @@
   "modal.reset": "Zoom zurücksetzen",
   "inline.unlock": "Gesten entsperren (Rad-Zoom, Ziehen, Pinch)",
   "inline.lock": "Gesten sperren (Seite scrollt normal)",
+  "inline.fitWidth": "An Breite anpassen",
   "inline.fullscreen": "Vollbildansicht öffnen"
 }
