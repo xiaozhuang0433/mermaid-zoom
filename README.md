@@ -59,6 +59,7 @@ Located in the bottom-right corner of each diagram:
 - **Wheel zoom** toggle - Enable wheel-to-zoom for this diagram (off by default)
 - **`+`** - Zoom in
 - **`-`** - Zoom out
+- **`↔`** - Fit to width (scale the diagram so its full width fits the note column)
 - **`⟲`** - Reset to fit
 - **`⛶`** - Toggle fullscreen
 

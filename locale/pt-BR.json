@@ -2,7 +2,7 @@
   "setting.zoomSensitivity.name": "Sensibilidade do zoom",
   "setting.zoomSensitivity.desc": "Quão forte o zoom responde à roda do mouse e ao gesto de pinça. Valores menores são mais suaves — tente 0.5x se o zoom no trackpad ou Magic Mouse for rápido demais. O zoom integrado aplica a mudança imediatamente; a tela cheia, na próxima vez que for aberta.",
   "setting.inlineZoomButtons.name": "Mostrar botões de zoom integrados",
-  "setting.inlineZoomButtons.desc": "Mostra em cada diagrama os botões de ampliar, reduzir, redefinir e bloquear. O botão de tela cheia está sempre visível. Bloqueado, a página rola normalmente sobre os diagramas; desbloqueado, você pode ampliar com a roda do mouse, arrastando ou fazendo pinça.",
+  "setting.inlineZoomButtons.desc": "Mostra em cada diagrama os botões de ampliar, reduzir, ajustar à largura, redefinir e bloquear. O botão de tela cheia está sempre visível. Bloqueado, a página rola normalmente sobre os diagramas; desbloqueado, você pode ampliar com a roda do mouse, arrastando ou fazendo pinça.",
   "setting.containerBorder.name": "Mostrar borda do contêiner",
   "setting.containerBorder.desc": "Exibe uma borda tracejada ao redor de cada contêiner de diagrama para ajudar a visualizar os limites da área de zoom.",
   "setting.alignment.name": "Alinhamento padrão",
@@ -17,5 +17,6 @@
   "modal.reset": "Redefinir zoom",
   "inline.unlock": "Desbloquear gestos (roda do mouse, arrastar, pinça)",
   "inline.lock": "Bloquear gestos (a página rola normalmente)",
+  "inline.fitWidth": "Ajustar à largura",
   "inline.fullscreen": "Abrir em tela cheia"
 }

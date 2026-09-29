@@ -28,8 +28,8 @@
 }
 
 /* Inline control cluster — one bar at the block's bottom-right corner
-   (+ / − / reset / lock / fullscreen), kept clear of Obsidian's own
-   code-block action icons at the top-right. */
+   (+ / − / fit width / reset / lock / fullscreen), kept clear of
+   Obsidian's own code-block action icons at the top-right. */
 .mermaid-zoom-inline-controls {
 	position: absolute;
 	bottom: 8px;

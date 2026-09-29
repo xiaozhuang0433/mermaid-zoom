@@ -98,19 +98,39 @@ export function getBlockScale(block: HTMLElement): number {
 	return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 }
 
-const clampScale = (scale: number): number =>
-	Math.max(INLINE_MIN_SCALE, Math.min(INLINE_MAX_SCALE, scale));
+/** Scale at which the svg exactly fills the block's content width — i.e.
+ *  the whole diagram is visible without horizontal scrolling. Re-read from
+ *  live layout on every call. Null when the block has no layout. */
+function fitWidthScale(block: HTMLElement, natural: { width: number }): number | null {
+	const style = block.win.getComputedStyle(block);
+	const available = block.clientWidth
+		- (parseFloat(style.paddingLeft) || 0)
+		- (parseFloat(style.paddingRight) || 0);
+	if (available <= 0) return null;
+	// Floor so the rounded svg width never overshoots and summons a scrollbar.
+	return Math.floor(available) / natural.width;
+}
+
+/** The zoom-out floor drops below INLINE_MIN_SCALE to the fit-width scale
+ *  for diagrams wider than the column, so zooming out can always reach
+ *  "whole diagram visible" (Obsidian renders flowcharts at natural size,
+ *  useMaxWidth off, so very wide ones need scales well under 0.5). */
+function clampScale(block: HTMLElement, natural: { width: number }, scale: number): number {
+	const fit = fitWidthScale(block, natural);
+	const min = fit === null ? INLINE_MIN_SCALE : Math.min(INLINE_MIN_SCALE, fit);
+	return Math.max(min, Math.min(INLINE_MAX_SCALE, scale));
+}
 
 /** The single place inline zoom styles are written. Real layout — the
  *  block grows/shrinks with the svg and becomes a horizontal scroller
  *  past the column width (see .mermaid-zoom-scaled in styles.css). */
 export function setBlockScale(block: HTMLElement, scale: number, anchorClientX?: number): void {
-	const newScale = clampScale(scale);
 	const svg = block.querySelector('svg');
 	if (!svg) return;
 	const natural = svgNaturalSize(svg);
 	if (!natural) return;
 
+	const newScale = clampScale(block, natural, scale);
 	const oldScale = getBlockScale(block);
 
 	if (newScale === 1) {
@@ -148,18 +168,35 @@ export function setBlockScale(block: HTMLElement, scale: number, anchorClientX?:
 }
 
 /** Zoom by a multiplicative factor. Returns false when the clamped result
- *  equals the current scale (at the bounds) — callers use that to skip
- *  preventDefault and let the page scroll through. */
+ *  does not move in the requested direction (at the bounds) — callers use
+ *  that to skip preventDefault and let the page scroll through. */
 export function zoomBlockBy(block: HTMLElement, factor: number, anchorClientX?: number): boolean {
+	const svg = block.querySelector('svg');
+	const natural = svg ? svgNaturalSize(svg) : null;
+	if (!natural) return false;
 	const current = getBlockScale(block);
-	const next = clampScale(current * factor);
-	if (next === current) return false;
+	const next = clampScale(block, natural, current * factor);
+	// The dynamic floor can rise above the current scale (the column
+	// widened after a fit); never let the clamp move against the gesture.
+	if (factor < 1 ? next >= current : next <= current) return false;
 	setBlockScale(block, next, anchorClientX);
 	return true;
 }
 
 export function resetBlockZoom(block: HTMLElement): void {
 	setBlockScale(block, 1);
+}
+
+/** Fit button: scale so the diagram's full width fits the block — shrinks
+ *  a diagram wider than the column, enlarges a narrower one (up to
+ *  INLINE_MAX_SCALE). One-shot, like the zoom buttons: it does not track
+ *  later column resizes. */
+export function fitBlockToWidth(block: HTMLElement): void {
+	const svg = block.querySelector('svg');
+	const natural = svg ? svgNaturalSize(svg) : null;
+	if (!natural) return;
+	const fit = fitWidthScale(block, natural);
+	if (fit !== null) setBlockScale(block, fit);
 }
 
 export function isUnlocked(block: HTMLElement): boolean {
@@ -335,9 +372,9 @@ function attachGestures(block: HTMLElement, getSensitivity: () => number): () =>
 	};
 }
 
-/** Create the bottom-right control cluster: zoom in / zoom out / reset /
- *  lock / fullscreen. Idempotent — an existence guard (not a marker class)
- *  so it self-heals crash reloads and pre-cluster versions. */
+/** Create the bottom-right control cluster: zoom in / zoom out / fit width /
+ *  reset / lock / fullscreen. Idempotent — an existence guard (not a marker
+ *  class) so it self-heals crash reloads and pre-cluster versions. */
 function ensureControlCluster(block: HTMLElement, opts: InlineZoomOpts): HTMLElement {
 	const existing = block.querySelector<HTMLElement>(CLUSTER_SELECTOR);
 	if (existing) return existing;
@@ -367,6 +404,7 @@ function ensureControlCluster(block: HTMLElement, opts: InlineZoomOpts): HTMLEle
 	// Buttons work regardless of lock state (the old 0019ca6 semantics).
 	makeButton('plus', t('modal.zoomIn'), () => zoomBlockBy(block, INLINE_ZOOM_STEP));
 	makeButton('minus', t('modal.zoomOut'), () => zoomBlockBy(block, 1 / INLINE_ZOOM_STEP));
+	makeButton('move-horizontal', t('inline.fitWidth'), () => fitBlockToWidth(block));
 	makeButton('rotate-ccw', t('modal.reset'), () => resetBlockZoom(block));
 
 	// Lock toggle: gates inline gestures only.

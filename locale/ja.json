@@ -2,7 +2,7 @@
   "setting.zoomSensitivity.name": "ズーム感度",
   "setting.zoomSensitivity.desc": "マウスホイールとピンチ操作によるズームの強さです。値を小さくするとより緩やかに動作します。トラックパッドや Magic Mouse でズームが速すぎる場合は 0.5x を試してください。インラインズームはすぐに反映され、全画面表示は次回開いたときに反映されます。",
   "setting.inlineZoomButtons.name": "インラインズームボタンを表示",
-  "setting.inlineZoomButtons.desc": "各図にズームイン・ズームアウト・リセット・ロックボタンを表示します。全画面ボタンは常に表示されます。ロック中はページが通常どおりスクロールし、ロック解除するとホイール・ドラッグ・ピンチでズームできます。",
+  "setting.inlineZoomButtons.desc": "各図にズームイン・ズームアウト・幅に合わせる・リセット・ロックボタンを表示します。全画面ボタンは常に表示されます。ロック中はページが通常どおりスクロールし、ロック解除するとホイール・ドラッグ・ピンチでズームできます。",
   "setting.containerBorder.name": "コンテナの枠線を表示",
   "setting.containerBorder.desc": "各図のコンテナ周囲に破線の枠を表示し、ズーム領域の境界を見やすくします。",
   "setting.alignment.name": "デフォルトの配置",
@@ -17,5 +17,6 @@
   "modal.reset": "ズームをリセット",
   "inline.unlock": "ジェスチャーのロックを解除（ホイールズーム・ドラッグ・ピンチ）",
   "inline.lock": "ジェスチャーをロック（ページは通常どおりスクロール）",
+  "inline.fitWidth": "幅に合わせる",
   "inline.fullscreen": "全画面表示で開く"
 }

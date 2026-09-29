@@ -2,7 +2,7 @@
   "setting.zoomSensitivity.name": "缩放灵敏度",
   "setting.zoomSensitivity.desc": "鼠标滚轮和双指捏合的缩放强度。数值越小手感越柔和——若触控板或妙控鼠标滚动缩放过快，可尝试 0.5x。内联缩放立即生效；全屏视图在下次打开时生效。",
   "setting.inlineZoomButtons.name": "显示内联缩放按钮",
-  "setting.inlineZoomButtons.desc": "在每个图表上显示放大、缩小、重置和锁定按钮。全屏按钮始终显示。锁定时页面正常滚过图表；解锁后可用滚轮、拖拽或捏合缩放。",
+  "setting.inlineZoomButtons.desc": "在每个图表上显示放大、缩小、适应宽度、重置和锁定按钮。全屏按钮始终显示。锁定时页面正常滚过图表；解锁后可用滚轮、拖拽或捏合缩放。",
   "setting.containerBorder.name": "显示容器边框",
   "setting.containerBorder.desc": "在每个图表容器周围显示虚线边框，便于看清缩放区域的边界。",
   "setting.alignment.name": "默认对齐方式",
@@ -25,5 +25,6 @@
   "modal.reset": "重置缩放",
   "inline.unlock": "解锁手势（滚轮缩放、拖拽、捏合）",
   "inline.lock": "锁定手势（页面正常滚动）",
+  "inline.fitWidth": "适应宽度",
   "inline.fullscreen": "全屏查看"
 }
