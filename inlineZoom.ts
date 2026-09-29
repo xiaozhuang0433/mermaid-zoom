@@ -167,20 +167,28 @@ export function setBlockScale(block: HTMLElement, scale: number, anchorClientX?:
 	}
 }
 
-/** Zoom by a multiplicative factor. Returns false when the clamped result
- *  does not move in the requested direction (at the bounds) — callers use
- *  that to skip preventDefault and let the page scroll through. */
-export function zoomBlockBy(block: HTMLElement, factor: number, anchorClientX?: number): boolean {
+/** Clamp-aware gesture zoom, shared by wheel/buttons (factor form) and
+ *  pinch (absolute form). The dynamic floor can rise above the current
+ *  scale (the column widened after a fit); the clamp may shorten a
+ *  gesture's reach but never reverse its direction. Returns false when
+ *  nothing moved — callers use that to skip preventDefault and let the
+ *  page scroll through. */
+function gestureScaleTo(block: HTMLElement, target: number, anchorClientX?: number): boolean {
 	const svg = block.querySelector('svg');
 	const natural = svg ? svgNaturalSize(svg) : null;
 	if (!natural) return false;
 	const current = getBlockScale(block);
-	const next = clampScale(block, natural, current * factor);
-	// The dynamic floor can rise above the current scale (the column
-	// widened after a fit); never let the clamp move against the gesture.
-	if (factor < 1 ? next >= current : next <= current) return false;
+	const next = clampScale(block, natural, target);
+	if (target < current ? next >= current : next <= current) return false;
 	setBlockScale(block, next, anchorClientX);
 	return true;
+}
+
+/** Zoom by a multiplicative factor. Returns false when the clamped result
+ *  does not move in the requested direction (at the bounds) — callers use
+ *  that to skip preventDefault and let the page scroll through. */
+export function zoomBlockBy(block: HTMLElement, factor: number, anchorClientX?: number): boolean {
+	return gestureScaleTo(block, getBlockScale(block) * factor, anchorClientX);
 }
 
 export function resetBlockZoom(block: HTMLElement): void {
@@ -318,7 +326,9 @@ function attachGestures(block: HTMLElement, getSensitivity: () => number): () =>
 				e.touches[1].clientY - e.touches[0].clientY
 			);
 			const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-			setBlockScale(block, pinchStartScale * (dist / pinchStartDist), midX);
+			// Return value unused: a two-finger pinch is always consumed
+			// (preventDefault above), only the write is direction-guarded.
+			gestureScaleTo(block, pinchStartScale * (dist / pinchStartDist), midX);
 			return;
 		}
 
