@@ -69,33 +69,38 @@ export default class MermaidZoomPlugin extends Plugin {
 	}
 
 	// Obsidian structure: <div class="mermaid"><svg id="mermaid-xxx">...</svg></div>.
-	// A bare .mermaid div may be added before its svg renders, and a rendered
+	// Mehrmaid structure: <div class="block-language-mehrmaid mermaid"><svg>...</svg></div>.
+	// A bare diagram div may be added before its svg renders, and a rendered
 	// svg may be injected into an existing div — catch both shapes. A
 	// RE-RENDERED svg swapped inside an already-decorated block arrives as
-	// the added node itself, sitting inside the .mermaid div — only
+	// the added node itself, sitting inside the diagram div — only
 	// closest() finds that host (inline zoom must re-apply the stored scale
 	// to the replacement svg promptly, not on the next workspace sweep).
+	private static readonly DIAGRAM_SELECTOR = '.mermaid, .block-language-mehrmaid';
+
 	private decorateMermaidBlocksIn(root: HTMLElement) {
-		const blocks = Array.from(root.querySelectorAll<HTMLElement>('.mermaid'));
-		if (root.classList.contains('mermaid')) {
+		const selector = MermaidZoomPlugin.DIAGRAM_SELECTOR;
+		const blocks = Array.from(root.querySelectorAll<HTMLElement>(selector));
+		if (root.matches && root.matches(selector)) {
 			blocks.push(root);
 		} else {
-			for (const svg of Array.from(root.querySelectorAll('.mermaid svg'))) {
-				const host = svg.closest('.mermaid');
+			for (const svg of Array.from(root.querySelectorAll('.mermaid svg, .block-language-mehrmaid svg'))) {
+				const host = svg.closest(selector);
 				if (host) blocks.push(host as HTMLElement);
 			}
-			const host = root.closest('.mermaid');
+			const host = root.closest ? root.closest(selector) : null;
 			if (host) blocks.push(host as HTMLElement);
 		}
-		for (const block of blocks) {
+		const uniqueBlocks = Array.from(new Set(blocks));
+		for (const block of uniqueBlocks) {
 			this.decorateMermaidBlock(block);
 		}
 	}
 
-	/** Decorate every mermaid block in the document; also re-syncs appearance
+	/** Decorate every mermaid / mehrmaid block in the document; also re-syncs appearance
 	 * classes (used after settings change). */
 	decorateAllMermaidBlocks() {
-		const blocks = document.querySelectorAll<HTMLElement>('.mermaid');
+		const blocks = document.querySelectorAll<HTMLElement>(MermaidZoomPlugin.DIAGRAM_SELECTOR);
 		for (const block of Array.from(blocks)) {
 			this.decorateMermaidBlock(block);
 		}
